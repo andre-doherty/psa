@@ -26,11 +26,12 @@ class StatistiquesFrequences(Statistique):
         for i in range(256):
             self.tab_frequence[i] = 0
 
-    def calculer(self, chaine):
-        for char in chaine:
-            self.nb_caracteres += 1
-            code = ord(char)
-            self.tab_frequence[code] += 1
+    def calculer(self, chaines):
+        for chaine in chaines:
+            for char in chaine:
+                self.nb_caracteres += 1
+                code = ord(char)
+                self.tab_frequence[code] += 1
 
 
     def restituer_statistiques(self):
@@ -56,20 +57,37 @@ class StatistiqueCaracteres(Statistique):
         self.nb_symboles = 0
         self.total_caracteres = 0
 
-    def calculer(self, chaine):
-        for char in chaine:
-            self.total_caracteres += 1
-            if (char.isalpha()):
-                self.nb_lettres += 1
-                if (char.islower()):
-                    self.nb_minuscules += 1
+        self.cache_alpha = dict()
+
+    def isalpha(self, charactere):
+        if (charactere in self.cache_alpha):
+            return self.cache_alpha.get(charactere)
+        else:
+            value = charactere.isalpha()
+            self.cache_alpha[charactere] = value
+            return value
+
+    def islower(self, charactere):
+        return charactere.islower()
+
+    def isdigit(self, charactere):
+        return charactere.isdigit()
+
+    def calculer(self, chaines):
+        for chaine in chaines:
+            for char in chaine:
+                self.total_caracteres += 1
+                if (self.isalpha(char)):
+                    self.nb_lettres += 1
+                    if (self.islower(char)):
+                        self.nb_minuscules += 1
+                    else:
+                        self.nb_majuscules += 1
                 else:
-                    self.nb_majuscules += 1
-            else:
-                if (char.isdigit()):
-                    self.nb_numeriques += 1
-                else:
-                    self.nb_symboles += 1
+                    if (self.isdigit(char)):
+                        self.nb_numeriques += 1
+                    else:
+                        self.nb_symboles += 1
 
     def restituer_statistiques(self):
         print("Statistiques caracteres : ")
@@ -89,14 +107,15 @@ class StatistiqueLongueur(Statistique):
         self.somme_longueurs = 0
         self.nb_lignes_analysees = 0
 
-    def calculer(self, chaine):
-        longueur_chaine = len(chaine)
-        if (longueur_chaine < self.longueur_minimum):
-            self.longueur_minimum = longueur_chaine
-        if (longueur_chaine > self.longueur_maximum):
-            self.longueur_maximum = longueur_chaine
-        self.somme_longueurs += longueur_chaine
-        self.nb_lignes_analysees += 1
+    def calculer(self, chaines):
+        for chaine in chaines:
+            longueur_chaine = len(chaine)
+            if (longueur_chaine < self.longueur_minimum):
+                self.longueur_minimum = longueur_chaine
+            if (longueur_chaine > self.longueur_maximum):
+                self.longueur_maximum = longueur_chaine
+            self.somme_longueurs += longueur_chaine
+            self.nb_lignes_analysees += 1
 
     def restituer_statistiques(self):
         print("Statistiques longueur : ")
@@ -109,10 +128,17 @@ class StatistiqueLongueur(Statistique):
 
 nb_lignes = 0
 
+paquet = 200000
 
-def process(line):
+def process(stats, entries, paquet_count):
     global nb_lignes
-    nb_lignes = nb_lignes + 1
+    global stat_longueurs
+    global stat_characters
+    global stat_frequences
+    nb_lignes += paquet_count
+    stats[0].calculer(entries)
+    stats[1].calculer(entries)
+    stats[2].calculer(entries)
 
 
 def analyze(filename, count_lines):
@@ -125,14 +151,29 @@ def analyze(filename, count_lines):
     stat_characters = StatistiqueCaracteres()
     stat_frequences = StatistiquesFrequences()
 
+    stats = [stat_frequences, stat_characters, stat_longueurs]
+
     with fileinput.input(files=(filename), openhook=fileinput.hook_encoded("iso8859-1")) as f:
+
+        entries = []
+        count_paquet = 0
+
         for line in f:
             entry = line.strip()
-            pbar.update(1)
-            process(line)
-            stat_longueurs.calculer(entry)
-            stat_characters.calculer(entry)
-            stat_frequences.calculer(entry)
+            entries.append(entry)
+            count_paquet+=1
+            if (count_paquet == paquet):
+                pbar.update(paquet)
+                process(stats, entries, paquet)
+                count_paquet = 0
+                entries = []
+
+        # reste du stock
+        if (count_paquet != 0):
+            pbar.update(count_paquet)
+            process(stats, entries, count_paquet)
+
+
     print(nb_lignes)
     pbar.close()
     stat_longueurs.restituer_statistiques()
@@ -144,6 +185,6 @@ def analyze(filename, count_lines):
 if __name__ == '__main__':
     count_lines = sum(1 for line in open('rockyou.txt' ,encoding="iso8859-1"))
     analyze('rockyou.txt', count_lines)
-    TestLog = log("LogDemo")
-    TestLog.debug("Debug Log")
-    TestLog.info("Info Log")
+    #TestLog = log("LogDemo")
+    #TestLog.debug("Debug Log")
+    #TestLog.info("Info Log")
