@@ -1,5 +1,7 @@
 import fileinput
 from tqdm import tqdm
+# pip3 install pysimplegui
+import PySimpleGUI as sg
 
 # On souhaite écrire un programme qui va ouvrir un fichier texte (rockyou.txt) contenant des mots de passe à
 # raison d’un mot de passe par ligne, et produire des statistiques sur l’usage des caractères (majuscules,
@@ -12,11 +14,8 @@ class Statistique:
     def calculer(self):
         print("do nothing")
 
-    def afficher_statistiques(self):
-        print("do nothing")
-
     def restituer_statistiques(self):
-        return dict()
+        print("do nothing")
 
 class StatistiquesFrequences(Statistique):
     """Donnes des statistiques sur la fréquence d'usage des caractères"""
@@ -35,7 +34,7 @@ class StatistiquesFrequences(Statistique):
                 self.tab_frequence[code] += 1
 
 
-    def afficher_statistiques(self):
+    def restituer_statistiques(self):
         print("Statistiques Frequences : ")
         for key in self.tab_frequence:
             str = ""
@@ -45,8 +44,6 @@ class StatistiquesFrequences(Statistique):
             else:
                 print(key, self.tab_frequence[key], format((float(self.tab_frequence[key])/float(self.nb_caracteres) * 100),'.2f'))
 
-    def restituer_statistiques(self):
-        return dict()
 
 
 class StatistiqueCaracteres(Statistique):
@@ -92,7 +89,7 @@ class StatistiqueCaracteres(Statistique):
                     else:
                         self.nb_symboles += 1
 
-    def afficher_statistiques(self):
+    def restituer_statistiques(self):
         print("Statistiques caracteres : ")
         print("nb minuscules ", self.nb_minuscules)
         print("nb majuscules ", self.nb_majuscules)
@@ -100,8 +97,6 @@ class StatistiqueCaracteres(Statistique):
         print("nb symboles ", self.nb_symboles)
         print("total analysés : ", self.total_caracteres)
 
-    def restituer_statistiques(self):
-        return dict()
 
 class StatistiqueLongueur(Statistique):
     """Donne des statistiques sur les chaines analysees : longueur max, min, moyenne"""
@@ -122,22 +117,25 @@ class StatistiqueLongueur(Statistique):
             self.somme_longueurs += longueur_chaine
             self.nb_lignes_analysees += 1
 
-    def afficher_statistiques(self):
+    def restituer_statistiques(self):
         print("Statistiques longueur : ")
         print("longueur minimum ", self.longueur_minimum)
         print("longueur maximum ", self.longueur_maximum)
         print("longueur moyenne ", self.somme_longueurs / self.nb_lignes_analysees)
 
-    def restituer_statistiques(self):
-        return dict()
+    # Press Maj+F10 to execute it or replace it with your code.
 
 
-NB_LIGNES = 0
-PAQUET = 200000
+nb_lignes = 0
+
+paquet = 200000
 
 def process(stats, entries, paquet_count):
-    global NB_LIGNES
-    NB_LIGNES += paquet_count
+    global nb_lignes
+    global stat_longueurs
+    global stat_characters
+    global stat_frequences
+    nb_lignes += paquet_count
     stats[0].calculer(entries)
     stats[1].calculer(entries)
     stats[2].calculer(entries)
@@ -147,7 +145,7 @@ def analyze(filename, count_lines):
 
     pbar = tqdm(total=count_lines)
 
-    global NB_LIGNES
+    global nb_lignes
 
     stat_longueurs = StatistiqueLongueur()
     stat_characters = StatistiqueCaracteres()
@@ -164,9 +162,9 @@ def analyze(filename, count_lines):
             entry = line.strip()
             entries.append(entry)
             count_paquet+=1
-            if (count_paquet == PAQUET):
-                pbar.update(PAQUET)
-                process(stats, entries, PAQUET)
+            if (count_paquet == paquet):
+                pbar.update(paquet)
+                process(stats, entries, paquet)
                 count_paquet = 0
                 entries = []
 
@@ -176,24 +174,47 @@ def analyze(filename, count_lines):
             process(stats, entries, count_paquet)
 
 
-    print(NB_LIGNES)
+    print(nb_lignes)
     pbar.close()
-    stat_longueurs.afficher_statistiques()
-    stat_characters.afficher_statistiques()
-    stat_frequences.afficher_statistiques()
-
-    stats = dict()
-    stats['stat_longueur'] = stat_longueurs
-    stats['stat_caracteres'] = stat_characters
-    stats['stat_frequences'] = stat_frequences
-
-    return stats
+    stat_longueurs.restituer_statistiques()
+    stat_characters.restituer_statistiques()
+    stat_frequences.restituer_statistiques()
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    count_lines = sum(1 for line in open('rockyou.txt' ,encoding="iso8859-1"))
-    analyze('rockyou.txt', count_lines)
+    # sg.theme_previewer()
+    sg.theme('Green')  # Add a touch of color
+    # All the stuff inside your window.
+
+    layoutInputFile = [[sg.T("")], [sg.Text("Veuillez choisir un fichier: "), sg.Input(key="-IN2-", change_submits=True),
+                           sg.FileBrowse("Ouvrir", key="-IN-")], [sg.Button("Lancer le calcul")]]
+    #layoutStatsOutput = [[sg.T("")], [sg.Text("Statistiques: ")], [sg.Output(size=(60,15))]]
+    # Create the Window
+    window = sg.Window('Stats Info', layoutInputFile)
+    # Event Loop to process "events" and get the "values" of the inputs
+    while True:
+        while True:
+            event, values = window.read()
+            print(values["-IN2-"])
+            if event == sg.WIN_CLOSED or event == "Exit":
+                break
+            elif event == "Lancer le calcul":
+                print(values["-IN2-"], "submitted")
+                inputfile = values["-IN2-"]
+                count_lines = sum(1 for line in open(inputfile, encoding="iso8859-1"))
+                print(count_lines)
+               # window = sg.Window('Stats Processing', layoutStatsOutput)
+                analyze(inputfile, count_lines)
+
+    window.close()
+
     #TestLog = log("LogDemo")
     #TestLog.debug("Debug Log")
     #TestLog.info("Info Log")
+
+
+
+
+
+
