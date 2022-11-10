@@ -1,5 +1,7 @@
 import fileinput
 from tqdm import tqdm
+# pip3 install pysimplegui
+import PySimpleGUI as sg
 
 # On souhaite écrire un programme qui va ouvrir un fichier texte (rockyou.txt) contenant des mots de passe à
 # raison d’un mot de passe par ligne, et produire des statistiques sur l’usage des caractères (majuscules,
@@ -181,8 +183,38 @@ def analyze(filename, count_lines):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    count_lines = sum(1 for line in open('rockyou.txt' ,encoding="iso8859-1"))
-    analyze('rockyou.txt', count_lines)
+    # sg.theme_previewer()
+    sg.theme('Green')  # Add a touch of color
+    # All the stuff inside your window.
+
+    layoutInputFile = [[sg.T("")], [sg.Text("Veuillez choisir un fichier: "), sg.Input(key="-IN2-", change_submits=True),
+                           sg.FileBrowse("Ouvrir", key="-IN-")], [sg.Button("Lancer le calcul")]]
+    #layoutStatsOutput = [[sg.T("")], [sg.Text("Statistiques: ")], [sg.Output(size=(60,15))]]
+    # Create the Window
+    window = sg.Window('Stats Info', layoutInputFile)
+    # Event Loop to process "events" and get the "values" of the inputs
+    while True:
+        while True:
+            event, values = window.read()
+            print(values["-IN2-"])
+            if event == sg.WIN_CLOSED or event == "Exit":
+                break
+            elif event == "Lancer le calcul":
+                print(values["-IN2-"], "submitted")
+                inputfile = values["-IN2-"]
+                count_lines = sum(1 for line in open(inputfile, encoding="iso8859-1"))
+                print(count_lines)
+               # window = sg.Window('Stats Processing', layoutStatsOutput)
+                analyze(inputfile, count_lines)
+
+    window.close()
+
     #TestLog = log("LogDemo")
     #TestLog.debug("Debug Log")
     #TestLog.info("Info Log")
+
+
+
+
+
+
