@@ -20,6 +20,8 @@ class Statistique:
 class StatistiquesFrequences(Statistique):
     """Donnes des statistiques sur la fréquence d'usage des caractères"""
 
+    TABLEAU_FREQUENCES = "tableau_frequence"
+
     def __init__(self):
         self.nb_caracteres = 0
         self.tab_frequence = dict()
@@ -48,11 +50,23 @@ class StatistiquesFrequences(Statistique):
                 print(key, self.tab_frequence[key], format((float(self.tab_frequence[key])/float(self.nb_caracteres) * 100),'.2f'))
 
     def restituer_statistiques(self):
-        return dict()
+
+        tableau_frequences = dict()
+        for key in self.tab_frequence:
+            tableau_frequences[key] = format((float(self.tab_frequence[key])/float(self.nb_caracteres) * 100),'.2f')
+
+        resultat = dict()
+        dict[StatistiquesFrequences.TABLEAU_FREQUENCES] = tableau_frequences
+        return resultat
 
 
 class StatistiqueCaracteres(Statistique):
     """Donne des statistiques sur l'usage des caractères (majuscules, minuscules, numériques, symboles"""
+
+    NB_MAJUSCULES = "nb_majuscules"
+    NB_MINUSCULES = "nb_minuscules"
+    NB_NUMERIQUES = "nb_numeriques"
+    NB_SYMBOLES = "nb_mymboles"
 
     def __init__(self):
         self.nb_majuscules = 0
@@ -106,10 +120,21 @@ class StatistiqueCaracteres(Statistique):
         print("total analysés : ", self.total_caracteres)
 
     def restituer_statistiques(self):
-        return dict()
+
+        resultat = dict()
+        resultat[StatistiqueCaracteres.NB_MAJUSCULES] = self.nb_majuscules
+        resultat[StatistiqueCaracteres.NB_MINUSCULES] = self.nb_minuscules
+        resultat[StatistiqueCaracteres.NB_NUMERIQUES] = self.nb_numeriques
+        resultat[StatistiqueCaracteres.NB_SYMBOLES] = self.nb_symboles
+
+        return resultat()
 
 class StatistiqueLongueur(Statistique):
     """Donne des statistiques sur les chaines analysees : longueur max, min, moyenne"""
+
+    LONGUEUR_MINIMUM = "longueur_minimum"
+    LONGUEUR_MAXIMUM = "longueur_maximum"
+    LONGUEUR_MOYENNE = "longueur_moyenne"
 
     def __init__(self):
         self.longueur_minimum = 100000000
@@ -137,4 +162,11 @@ class StatistiqueLongueur(Statistique):
         print("longueur moyenne ", self.somme_longueurs / self.nb_lignes_analysees)
 
     def restituer_statistiques(self):
-        return dict()
+
+        resultat = dict()
+
+        resultat[StatistiqueLongueur.LONGUEUR_MINIMUM] = self.longueur_minimum
+        resultat[StatistiqueLongueur.LONGUEUR_MAXIMUM] = self.longueur_maximum
+        resultat[StatistiqueLongueur.LONGUEUR_MOYENNE] = self.somme_longueurs / self.nb_lignes_analysees
+
+        return resultat
