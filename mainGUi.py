@@ -39,42 +39,36 @@ while True:
             break
         elif event == "Lancer le calcul":
             window.close()
-            sg.popup(values["-IN2-"], "submitted")
+            #sg.popup(values["-IN2-"], "submitted")
             inputfile=values["-IN2-"]
             count_lines = sum(1 for line in open(inputfile, encoding="iso8859-1"))
             #display_results()
             dict_output=engine.analyze(inputfile, count_lines)
+
             for x in dict_output:
                 statistique = dict_output[x]
-                #sg.popup(statistique.restituer_statistiques())
+                data=statistique.restituer_statistiques()
+                sg.popup(type(data))
                 #sg.popup("stat", x, dir(dict_output[x]), sys.getsizeof(dict_output[x]))
                 # Fausse données pour pouvoir travailler
-                data = [['longueur minimum',5],['longueur maximum',  9],['longueur moyenne' , 6.916666666666667]]
+                #data = [['longueur minimum',5],['longueur maximum',  9],['longueur moyenne' , 6.916666666666667]]
+                cles = list(data.keys())
+                valeurs = list(data.values())
+                sg.popup(data)
+                #sg.popup(len(data))
 
 
+                # Create the PySimpleGUI window
 
-                lheader_list = [str(x) for x in range(len(data[0]))]
-                tab2_layout = [[sg.Table(values=data, max_col_width=25,
-                                         background_color='lightgreen',
-                                         auto_size_columns=True,
-                                         justification='right',
-                                         alternating_row_color='green',
-               key='_table_', headings = header_list)]
-               [sg.Button('Update')]]
-
-
-
-                # show plot
-                windowtbl = sg.Window('Histogram and Table', tab2_layout)
+                # Add the Table Element to the window
+                table_layout = sg.Table(values=data.items(), headings=['Statistiques', 'Valeur'], max_col_width=20,
+                                 auto_size_columns=True, justification='right',
+                                 alternating_row_color='lightgreen', num_rows=len(data))
+                windowtbl = sg.Window('Dictionary Table',table_layout)
                 while True:
                     event, values = windowtbl.read()
                     if event == sg.WIN_CLOSED:
                         break
-
                 windowtbl.close()
-
-
-
-
 
 
