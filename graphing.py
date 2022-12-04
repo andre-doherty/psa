@@ -1,9 +1,11 @@
+import random
 import PySimpleGUI as sg
 import numpy as np
 import matplotlib.pyplot as plt
 import core.engine as engine
 import core.variables as variables
 import core.stats as statistiques
+import seaborn as sns
 
 #Clé= nom de la stat , valeur en valeur
 data = {'longueur minimum' : 5,
@@ -30,18 +32,16 @@ stat2={'nb minuscules':  192,
        'nb majuscules':  0,
        'nb numeriques':  57,
        'nb symboles':  0}
+fig,ax=plt.subplots()
+ax.pie(stat2.values(),labels=stat2.keys())
 
-plt.pie(stat2.values(), labels=stat2.keys())
-pielayout = [[sg.Canvas(size=(400, 400), key='-CANVAS-')]]
-window = sg.Window('Répartition', pielayout)
-canvas = window['-CANVAS-'].TKCanvas
-canvas.figure = plt.gcf()
-canvas.draw()
-while True:
-    event, values = window.read()
-    if event == sg.WIN_CLOSED:
-        break
+plt.show()
 
-# Close the window and destroy the pie chart
-window.close()
-plt.close('all')
+#sample freq
+stat3={}
+for i in range(255):
+    c=chr(i)
+    stat3[c]=random.random()*100
+
+
+
