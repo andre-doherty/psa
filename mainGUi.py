@@ -61,9 +61,9 @@ while True:
                 # Create the PySimpleGUI window
 
                 # Add the Table Element to the window
-                table_layout = sg.Table(values=data.items(), headings=['Statistiques', 'Valeur'], max_col_width=20,
+                table_layout = [[ sg.Table(values=data.items(), headings=['Statistiques', 'Valeur'], max_col_width=20,
                                  auto_size_columns=True, justification='right',
-                                 alternating_row_color='lightgreen', num_rows=len(data))
+                                 alternating_row_color='lightgreen', num_rows=len(data)) ]]
                 windowtbl = sg.Window('Dictionary Table',table_layout)
                 while True:
                     event, values = windowtbl.read()

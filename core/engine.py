@@ -1,61 +1,99 @@
 import fileinput
-from tqdm import tqdm
+from abc import ABC, abstractmethod
 
-from core import variables
-from core.stats import StatistiqueLongueur, StatistiqueCaracteres, StatistiquesFrequences
-
-PAQUET = variables.PAQUET
-
-NB_LIGNES = 0
-
-def process(stats, entries, paquet_count):
-    global NB_LIGNES
-    NB_LIGNES += paquet_count
-    stats[0].calculer(entries)
-    stats[1].calculer(entries)
-    stats[2].calculer(entries)
+from core import variables, Constantes
+from core.stats import StatistiqueLongueur, StatistiqueCaracteres, StatistiquesFrequences, Statistique
 
 
-def analyze(filename, count_lines):
+#import multiprocessing as mp
 
-    pbar = tqdm(total=count_lines)
+class EngineObserver(ABC):
 
-    global PAQUET
+    @abstractmethod
+    def notifyEngineObserver(self, lines_processed):
+        pass
 
-    stat_longueurs = StatistiqueLongueur()
-    stat_characters = StatistiqueCaracteres()
-    stat_frequences = StatistiquesFrequences()
 
-    stats = [stat_frequences, stat_characters, stat_longueurs]
 
-    with fileinput.input(files=(filename), openhook=fileinput.hook_encoded("iso8859-1")) as f:
+class Engine:
+    def __init__(self, demanded_stats, filename, paquet = variables.PAQUET):
+        self.nb_lignes = 0
+        self.paquet = paquet
+        self.filename = filename
+        self.nb_lignes_traitees = 0
 
-        entries = []
-        count_paquet = 0
+        self.observers = []
 
-        for line in f:
-            entry = line.strip()
-            entries.append(entry)
-            count_paquet+=1
-            if (count_paquet == PAQUET):
-                pbar.update(PAQUET)
-                process(stats, entries, PAQUET)
-                count_paquet = 0
-                entries = []
+        self.statistics = dict()
+        for demanded_stat in demanded_stats:
+            if demanded_stat == Constantes.STAT_LONGUEUR:
+                self.statistics[Constantes.STAT_LONGUEUR] = StatistiqueLongueur()
+            if demanded_stat == Constantes.STAT_CARACTERES:
+                self.statistics[Constantes.STAT_CARACTERES] = StatistiqueCaracteres()
+            if demanded_stat == Constantes.STAT_FREQUENCES:
+                self.statistics[Constantes.STAT_FREQUENCES] = StatistiquesFrequences()
 
-        # reste du stock
-        if (count_paquet != 0):
-            pbar.update(count_paquet)
-            process(stats, entries, count_paquet)
+    def get_statistiques(self):
+        return self.statistics
 
-    pbar.close()
-    stat_longueurs.afficher_statistiques()
-    stat_characters.afficher_statistiques()
-    stat_frequences.afficher_statistiques()
+    def register_observer(self, engineObserver: EngineObserver):
+        self.observers.append(engineObserver)
 
-    stats = dict()
-    stats['stat_longueur'] = stat_longueurs
-    stats['stat_caracteres'] = stat_characters
-    stats['stat_frequences'] = stat_frequences
+    def unregister_observer(self, engineObserver: EngineObserver):
+        self.observers.remove(engineObserver)
 
-    return stats
+    def notify_observers(self, lines_processed):
+        for observer in self.observers:
+            observer.notifyEngineObserver(lines_processed)
+
+    def _process(self, stats, entries, nb_entries_to_process):
+        for stat in stats.values():
+            stat.calculer(entries)
+            stat.notify_observer()
+        self.notify_observers(nb_entries_to_process)
+
+    def analyze(self):
+
+        with fileinput.input(files=(self.filename), openhook=fileinput.hook_encoded("iso8859-1")) as f:
+
+            entries = []
+            count_paquet = 0
+
+            for line in f:
+                entry = line.strip()
+                entries.append(entry)
+                count_paquet+=1
+
+                # process with a whole packet of strings
+                if (count_paquet == self.paquet):
+                    self._process(self.statistics, entries, count_paquet)
+                    count_paquet = 0
+                    entries = []
+
+            # process the leftover (not a full packet of strings)
+            if (count_paquet != 0):
+                self._process(self.statistics, entries, count_paquet)
+
+
+    #def init_analysis(demanded_stats):
+
+
+
+
+    #def process_analysis(filename):
+
+    
+
+
+
+#def async_analysis(filename, listeners):
+#    pool = mp.Pool(1)
+#    jobs = []
+
+#    jobs.append(pool.apply_async(_process_analysis, (filename)))
+
+#    for job in jobs:
+#        job.get()
+
+    #clean up
+#        pool.close()

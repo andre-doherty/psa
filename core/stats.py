@@ -1,24 +1,43 @@
+from abc import abstractmethod, ABC
+
 from core import Constantes
 
 
+class StatistiqueObserver(ABC):
+    @abstractmethod
+    def notifyStatistiqueObserver(self):
+        pass
+
 class Statistique:
 
+    def __init__(self):
+        self.observers = []
+
+    def register_listener(self, observer):
+        self.observers.append(observer)
+
+    def unregister_listener(self, observer):
+        self.observers.remove(observer)
+
+    def notify_observer(self):
+        for observer in self.observers:
+            observer.notifyStatistiqueObserver()
+
+    @abstractmethod
     def get_type(self):
-        return "unknown"
+        pass
 
-    def calculer(self):
-        print("do nothing")
+    @abstractmethod
+    def calculer(self, chaines):
+        pass
 
-    def afficher_statistiques(self):
-        print("do nothing")
-
+    @abstractmethod
     def restituer_statistiques(self):
-        return dict()
-
+        pass
 
 
 class StatistiquesFrequences(Statistique):
-    """Donnes des statistiques sur la fréquence d'usage des caractères"""
+    """Donne des statistiques sur la fréquence d'usage des caractères"""
 
     TABLEAU_FREQUENCES = "tableau_frequence"
 
@@ -27,6 +46,8 @@ class StatistiquesFrequences(Statistique):
         self.tab_frequence = dict()
         for i in range(256):
             self.tab_frequence[i] = 0
+
+        Statistique.__init__(self)
 
     def get_type(self):
         return Constantes.STAT_FREQUENCES
@@ -38,17 +59,6 @@ class StatistiquesFrequences(Statistique):
                 code = ord(char)
                 self.tab_frequence[code] += 1
 
-
-    def afficher_statistiques(self):
-        print("Statistiques Frequences : ")
-        for key in self.tab_frequence:
-            str = ""
-            str +=  chr(key)
-            if (str.isprintable()):
-                print(key, " (", str, ") ", self.tab_frequence[key], format((float(self.tab_frequence[key])/float(self.nb_caracteres) * 100),'.2f'))
-            else:
-                print(key, self.tab_frequence[key], format((float(self.tab_frequence[key])/float(self.nb_caracteres) * 100),'.2f'))
-
     def restituer_statistiques(self):
 
         tableau_frequences = dict()
@@ -56,7 +66,7 @@ class StatistiquesFrequences(Statistique):
             tableau_frequences[key] = format((float(self.tab_frequence[key])/float(self.nb_caracteres) * 100),'.2f')
 
         resultat = dict()
-        dict[StatistiquesFrequences.TABLEAU_FREQUENCES] = tableau_frequences
+        resultat[StatistiquesFrequences.TABLEAU_FREQUENCES] = tableau_frequences
         return resultat
 
 
@@ -66,7 +76,8 @@ class StatistiqueCaracteres(Statistique):
     NB_MAJUSCULES = "nb_majuscules"
     NB_MINUSCULES = "nb_minuscules"
     NB_NUMERIQUES = "nb_numeriques"
-    NB_SYMBOLES = "nb_mymboles"
+    NB_SYMBOLES = "nb_symboles"
+    TOTAL_CARACTERES = "total_caracteres"
 
     def __init__(self):
         self.nb_majuscules = 0
@@ -77,6 +88,8 @@ class StatistiqueCaracteres(Statistique):
         self.total_caracteres = 0
 
         self.cache_alpha = dict()
+
+        Statistique.__init__(self)
 
     def get_type(self):
         return Constantes.STAT_CARACTERES
@@ -111,14 +124,6 @@ class StatistiqueCaracteres(Statistique):
                     else:
                         self.nb_symboles += 1
 
-    def afficher_statistiques(self):
-        print("Statistiques caracteres : ")
-        print("nb minuscules ", self.nb_minuscules)
-        print("nb majuscules ", self.nb_majuscules)
-        print("nb numeriques ", self.nb_numeriques)
-        print("nb symboles ", self.nb_symboles)
-        print("total analysés : ", self.total_caracteres)
-
     def restituer_statistiques(self):
 
         resultat = dict()
@@ -126,8 +131,9 @@ class StatistiqueCaracteres(Statistique):
         resultat[StatistiqueCaracteres.NB_MINUSCULES] = self.nb_minuscules
         resultat[StatistiqueCaracteres.NB_NUMERIQUES] = self.nb_numeriques
         resultat[StatistiqueCaracteres.NB_SYMBOLES] = self.nb_symboles
+        resultat[StatistiqueCaracteres.TOTAL_CARACTERES] = self.total_caracteres
 
-        return resultat()
+        return resultat
 
 class StatistiqueLongueur(Statistique):
     """Donne des statistiques sur les chaines analysees : longueur max, min, moyenne"""
@@ -142,6 +148,8 @@ class StatistiqueLongueur(Statistique):
         self.somme_longueurs = 0
         self.nb_lignes_analysees = 0
 
+        Statistique.__init__(self)
+
     def get_type(self):
         return Constantes.STAT_LONGUEUR
 
@@ -154,12 +162,6 @@ class StatistiqueLongueur(Statistique):
                 self.longueur_maximum = longueur_chaine
             self.somme_longueurs += longueur_chaine
             self.nb_lignes_analysees += 1
-
-    def afficher_statistiques(self):
-        print("Statistiques longueur : ")
-        print("longueur minimum ", self.longueur_minimum)
-        print("longueur maximum ", self.longueur_maximum)
-        print("longueur moyenne ", self.somme_longueurs / self.nb_lignes_analysees)
 
     def restituer_statistiques(self):
 
