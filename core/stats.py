@@ -110,32 +110,18 @@ class StatistiqueCaracteres(Statistique):
     def get_type(self):
         return Constantes.STAT_CARACTERES
 
-    def isalpha(self, charactere):
-        if (charactere in self.cache_alpha):
-            return self.cache_alpha.get(charactere)
-        else:
-            value = charactere.isalpha()
-            self.cache_alpha[charactere] = value
-            return value
-
-    def islower(self, charactere):
-        return charactere.islower()
-
-    def isdigit(self, charactere):
-        return charactere.isdigit()
-
     def calculer(self, chaines):
         for chaine in chaines:
             for char in chaine:
                 self.total_caracteres += 1
-                if (self.isalpha(char)):
+                if (char.isalpha()):
                     self.nb_lettres += 1
-                    if (self.islower(char)):
+                    if (char.islower()):
                         self.nb_minuscules += 1
                     else:
                         self.nb_majuscules += 1
                 else:
-                    if (self.isdigit(char)):
+                    if (char.isdigit()):
                         self.nb_numeriques += 1
                     else:
                         self.nb_symboles += 1

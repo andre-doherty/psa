@@ -5,17 +5,15 @@ from tqdm import tqdm
 import multiprocessing as mp
 import threading
 
-from core.stats import StatistiqueObserver
+# pip install tqdm
 
+
+from core.stats import StatistiqueObserver
 
 # On souhaite écrire un programme qui va ouvrir un fichier texte (rockyou.txt) contenant des mots de passe à
 # raison d’un mot de passe par ligne, et produire des statistiques sur l’usage des caractères (majuscules,
 # minuscules, numériques, symboles), la longueur minimale, maximale et moyenne, la fréquence d’usage des
 # lettres dans ce fichier.
-
-
-
-
 
 class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
@@ -46,11 +44,11 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
         stat.register_listener(self)
 
-        thread = threading.Thread(target=self.long_run, args=(engine,), daemon=True)
-        thread.start()
-
+        #thread = threading.Thread(target=self.long_run, args=(engine,), daemon=True)
+        #thread.start()
         # wait until finished
-        thread.join()
+        #thread.join()
+        self.long_run(engine)
 
         for statistique_name in statistiques:
             statistique = statistiques[statistique_name]
@@ -68,15 +66,8 @@ if __name__ == '__main__':
     consoleGui = ConsoleGUI(sample, count_lines)
     consoleGui.process_analysis([Constantes.STAT_LONGUEUR, Constantes.STAT_FREQUENCES, Constantes.STAT_CARACTERES])
 
-    #thread = threading.Thread(target=process_analysis, args=(), daemon=True)
-    #thread.start()
-
     #pbar = tqdm(total=count_lines)
     #TestLog = log("LogDemo")
     #TestLog.debug("Debug Log")
     #TestLog.info("Info Log")
 
-
-#pbar.update(PAQUET)
-#pbar.update(count_paquet)
-# pbar.close()
