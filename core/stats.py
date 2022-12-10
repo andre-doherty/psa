@@ -1,11 +1,16 @@
+import time
 from abc import abstractmethod, ABC
 
 from core import Constantes
 
 
 class StatistiqueObserver(ABC):
+
+    TIMESTAMP = "timestamp"
+    CURRENT_STATISTICS = "current_statistiques"
+
     @abstractmethod
-    def notifyStatistiqueObserver(self):
+    def notifyStatistiqueObserver(self, notification):
         pass
 
 class Statistique:
@@ -19,9 +24,9 @@ class Statistique:
     def unregister_listener(self, observer):
         self.observers.remove(observer)
 
-    def notify_observer(self):
+    def notify_observer(self, notification):
         for observer in self.observers:
-            observer.notifyStatistiqueObserver()
+            observer.notifyStatistiqueObserver(notification)
 
     @abstractmethod
     def get_type(self):
@@ -35,6 +40,13 @@ class Statistique:
     def restituer_statistiques(self):
         pass
 
+
+    def create_notification_payload(self):
+        notification = dict()
+        notification[StatistiqueObserver.TIMESTAMP] = time.time()
+        notification[StatistiqueObserver.CURRENT_STATISTICS] = self.restituer_statistiques()
+
+        return notification
 
 class StatistiquesFrequences(Statistique):
     """Donne des statistiques sur la fréquence d'usage des caractères"""
@@ -58,12 +70,16 @@ class StatistiquesFrequences(Statistique):
                 self.nb_caracteres += 1
                 code = ord(char)
                 self.tab_frequence[code] += 1
+        self.notify_observer(self.create_notification_payload())
 
     def restituer_statistiques(self):
 
         tableau_frequences = dict()
         for key in self.tab_frequence:
-            tableau_frequences[key] = format((float(self.tab_frequence[key])/float(self.nb_caracteres) * 100),'.2f')
+            if self.nb_caracteres != 0:
+                tableau_frequences[key] = format((float(self.tab_frequence[key])/float(self.nb_caracteres) * 100),'.2f')
+            else:
+                tableau_frequences[key] = "N/A"
 
         resultat = dict()
         resultat[StatistiquesFrequences.TABLEAU_FREQUENCES] = tableau_frequences
@@ -124,6 +140,8 @@ class StatistiqueCaracteres(Statistique):
                     else:
                         self.nb_symboles += 1
 
+        self.notify_observer(self.create_notification_payload())
+
     def restituer_statistiques(self):
 
         resultat = dict()
@@ -163,12 +181,17 @@ class StatistiqueLongueur(Statistique):
             self.somme_longueurs += longueur_chaine
             self.nb_lignes_analysees += 1
 
+        self.notify_observer(self.create_notification_payload())
+
     def restituer_statistiques(self):
 
         resultat = dict()
 
         resultat[StatistiqueLongueur.LONGUEUR_MINIMUM] = self.longueur_minimum
         resultat[StatistiqueLongueur.LONGUEUR_MAXIMUM] = self.longueur_maximum
-        resultat[StatistiqueLongueur.LONGUEUR_MOYENNE] = self.somme_longueurs / self.nb_lignes_analysees
+        if self.nb_lignes_analysees != 0:
+            resultat[StatistiqueLongueur.LONGUEUR_MOYENNE] = self.somme_longueurs / self.nb_lignes_analysees
+        else:
+            resultat[StatistiqueLongueur.LONGUEUR_MOYENNE] = "N/A"
 
         return resultat

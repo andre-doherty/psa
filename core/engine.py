@@ -8,9 +8,10 @@ from core.stats import StatistiqueLongueur, StatistiqueCaracteres, StatistiquesF
 #import multiprocessing as mp
 
 class EngineObserver(ABC):
+    LINES_PROCESSED = "lines_processed"
 
     @abstractmethod
-    def notifyEngineObserver(self, lines_processed):
+    def notifyEngineObserver(self, notification):
         pass
 
 
@@ -42,15 +43,16 @@ class Engine:
     def unregister_observer(self, engineObserver: EngineObserver):
         self.observers.remove(engineObserver)
 
-    def notify_observers(self, lines_processed):
+    def notify_observers(self, notification):
         for observer in self.observers:
-            observer.notifyEngineObserver(lines_processed)
+            observer.notifyEngineObserver(notification)
 
     def _process(self, stats, entries, nb_entries_to_process):
         for stat in stats.values():
             stat.calculer(entries)
-            stat.notify_observer()
-        self.notify_observers(nb_entries_to_process)
+        notification = dict()
+        notification[EngineObserver.LINES_PROCESSED] = nb_entries_to_process
+        self.notify_observers(notification)
 
     def analyze(self):
 

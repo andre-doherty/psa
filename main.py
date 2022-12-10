@@ -14,6 +14,9 @@ from core.stats import StatistiqueObserver
 # lettres dans ce fichier.
 
 
+
+
+
 class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
     def __init__(self, filename, line_count):
@@ -21,11 +24,17 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
         self.line_count = line_count
         self.pbar = tqdm(total=line_count)
 
-    def notifyEngineObserver(self, lines_processed):
+    def notifyEngineObserver(self, notification):
+        lines_processed = notification[EngineObserver.LINES_PROCESSED]
         self.pbar.update(lines_processed)
 
-    def notifyStatistiqueObserver(self):
-        print("notified!")
+    def notifyStatistiqueObserver(self, notification):
+        #print("notified!")
+        pass
+
+    @staticmethod
+    def long_run(engine):
+        engine.analyze()
 
     def process_analysis(self, demanded_statistiques):
 
@@ -37,9 +46,12 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
         stat.register_listener(self)
 
-        engine.analyze()
+        thread = threading.Thread(target=self.long_run, args=(engine,), daemon=True)
+        thread.start()
 
-        #statistiques = engine.get_statistiques()
+        # wait until finished
+        thread.join()
+
         for statistique_name in statistiques:
             statistique = statistiques[statistique_name]
             resultat = statistique.restituer_statistiques()
@@ -48,7 +60,8 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    sample = 'smallrock.txt'
+    #sample = 'smallrock.txt'
+    sample = 'rockyou.txt'
 
     count_lines = sum(1 for line in open(sample ,encoding="iso8859-1"))
 
