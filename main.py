@@ -58,10 +58,12 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    #sample = 'smallrock.txt'
+    sample = 'smallrock.txt'
     sample = 'rockyou.txt'
+    #sample = 'c:\\users\\adohe\\Downloads\\rockyou2021.txt'
 
-    count_lines = sum(1 for line in open(sample ,encoding="iso8859-1"))
+    #count_lines = sum(1 for line in open(sample ,encoding="iso8859-1"))
+    count_lines = 0
 
     consoleGui = ConsoleGUI(sample, count_lines)
     consoleGui.process_analysis([Constantes.STAT_LONGUEUR, Constantes.STAT_FREQUENCES, Constantes.STAT_CARACTERES])

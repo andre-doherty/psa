@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from core import variables, Constantes
 from core.stats import StatistiqueLongueur, StatistiqueCaracteres, StatistiquesFrequences, Statistique
 
-
 #import multiprocessing as mp
 
 class EngineObserver(ABC):
@@ -14,10 +13,11 @@ class EngineObserver(ABC):
     def notifyEngineObserver(self, notification):
         pass
 
-
-
 class Engine:
-    def __init__(self, demanded_stats, filename, paquet = variables.PAQUET):
+
+    DEFAULT_PAQUET_SIZE = 200000
+
+    def __init__(self, demanded_stats, filename, paquet = DEFAULT_PAQUET_SIZE):
         self.nb_lignes = 0
         self.paquet = paquet
         self.filename = filename

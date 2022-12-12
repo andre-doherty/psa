@@ -112,8 +112,8 @@ class StatistiqueCaracteres(Statistique):
 
     def calculer(self, chaines):
         for chaine in chaines:
+            self.total_caracteres += len(chaine)
             for char in chaine:
-                self.total_caracteres += 1
                 if (char.isalpha()):
                     self.nb_lettres += 1
                     if (char.islower()):
