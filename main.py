@@ -32,17 +32,16 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
     @staticmethod
     def long_run(engine):
-        engine.analyze()
+        engine.analyze(Engine.STRATEGIE_BLOCK)
 
     def process_analysis(self, demanded_statistiques):
 
-        engine = Engine(demanded_statistiques, filename=self.filename)
+        engine = Engine(demanded_statistiques, filename=self.filename, paquet=2048*1024)
         engine.register_observer(self)
 
         statistiques = engine.get_statistiques()
-        stat = statistiques[Constantes.STAT_LONGUEUR]
-
-        stat.register_listener(self)
+        #stat = statistiques[Constantes.STAT_LONGUEUR]
+        #stat.register_listener(self)
 
         #thread = threading.Thread(target=self.long_run, args=(engine,), daemon=True)
         #thread.start()
@@ -58,7 +57,7 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    sample = 'smallrock.txt'
+    #sample = 'smallrock.txt'
     sample = 'rockyou.txt'
     #sample = 'c:\\users\\adohe\\Downloads\\rockyou2021.txt'
 
@@ -67,6 +66,7 @@ if __name__ == '__main__':
 
     consoleGui = ConsoleGUI(sample, count_lines)
     consoleGui.process_analysis([Constantes.STAT_LONGUEUR, Constantes.STAT_FREQUENCES, Constantes.STAT_CARACTERES])
+    #consoleGui.process_analysis([Constantes.STAT_FREQUENCES])
 
     #pbar = tqdm(total=count_lines)
     #TestLog = log("LogDemo")

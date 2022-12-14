@@ -52,12 +52,14 @@ class StatistiquesFrequences(Statistique):
     """Donne des statistiques sur la fréquence d'usage des caractères"""
 
     TABLEAU_FREQUENCES = "tableau_frequence"
+    NB_CARACTERES = "nb_caracteres"
 
     def __init__(self):
         self.nb_caracteres = 0
-        self.tab_frequence = dict()
-        for i in range(256):
-            self.tab_frequence[i] = 0
+        #self.tab_frequence = dict()
+        #for i in range(256):
+        #    self.tab_frequence[i] = 0
+        self.not_ascii = dict()
 
         Statistique.__init__(self)
 
@@ -68,20 +70,27 @@ class StatistiquesFrequences(Statistique):
         for chaine in chaines:
             for char in chaine:
                 self.nb_caracteres += 1
-                code = ord(char)
-                self.tab_frequence[code] += 1
-        self.notify_observer(self.create_notification_payload())
+                if (char in self.not_ascii):
+                    value = self.not_ascii[char]
+                    value += 1
+                    self.not_ascii[char] = value
+                else:
+                    self.not_ascii[char] = 1
+        if len(self.observers) != 0:
+            self.notify_observer(self.create_notification_payload())
 
     def restituer_statistiques(self):
 
         tableau_frequences = dict()
-        for key in self.tab_frequence:
+        for key in sorted(self.not_ascii):
             if self.nb_caracteres != 0:
-                tableau_frequences[key] = format((float(self.tab_frequence[key])/float(self.nb_caracteres) * 100),'.2f')
+                #tableau_frequences[key] = format((float(self.not_ascii[key])/float(self.nb_caracteres) * 100),'.2f')
+                tableau_frequences[key] = self.not_ascii[key]
             else:
                 tableau_frequences[key] = "N/A"
 
         resultat = dict()
+        resultat[StatistiquesFrequences.NB_CARACTERES] = self.nb_caracteres
         resultat[StatistiquesFrequences.TABLEAU_FREQUENCES] = tableau_frequences
         return resultat
 
@@ -126,7 +135,8 @@ class StatistiqueCaracteres(Statistique):
                     else:
                         self.nb_symboles += 1
 
-        self.notify_observer(self.create_notification_payload())
+        if len(self.observers) != 0:
+            self.notify_observer(self.create_notification_payload())
 
     def restituer_statistiques(self):
 
@@ -145,12 +155,15 @@ class StatistiqueLongueur(Statistique):
     LONGUEUR_MINIMUM = "longueur_minimum"
     LONGUEUR_MAXIMUM = "longueur_maximum"
     LONGUEUR_MOYENNE = "longueur_moyenne"
+    REPARTITION = "repartition"
 
     def __init__(self):
         self.longueur_minimum = 100000000
         self.longueur_maximum = 0
         self.somme_longueurs = 0
         self.nb_lignes_analysees = 0
+
+        self.tab_longueurs = dict()
 
         Statistique.__init__(self)
 
@@ -160,21 +173,36 @@ class StatistiqueLongueur(Statistique):
     def calculer(self, chaines):
         for chaine in chaines:
             longueur_chaine = len(chaine)
-            if (longueur_chaine < self.longueur_minimum):
-                self.longueur_minimum = longueur_chaine
-            if (longueur_chaine > self.longueur_maximum):
-                self.longueur_maximum = longueur_chaine
+            if longueur_chaine in self.tab_longueurs:
+                compteur = self.tab_longueurs[longueur_chaine]
+                compteur += 1
+                self.tab_longueurs[longueur_chaine] = compteur
+            else:
+                self.tab_longueurs[longueur_chaine] = 1
+
             self.somme_longueurs += longueur_chaine
             self.nb_lignes_analysees += 1
 
-        self.notify_observer(self.create_notification_payload())
+        if len(self.observers) != 0:
+            self.notify_observer(self.create_notification_payload())
 
     def restituer_statistiques(self):
 
+        repartition = dict()
+
+        sorted_longueurs = sorted(self.tab_longueurs)
+
+        longueur_minimum = sorted_longueurs[0]
+        longueur_maximum = sorted_longueurs[-1]
+
+        for longueur in sorted_longueurs :
+            repartition[longueur] = self.tab_longueurs[longueur]
+
         resultat = dict()
 
-        resultat[StatistiqueLongueur.LONGUEUR_MINIMUM] = self.longueur_minimum
-        resultat[StatistiqueLongueur.LONGUEUR_MAXIMUM] = self.longueur_maximum
+        resultat[StatistiqueLongueur.REPARTITION] = repartition
+        resultat[StatistiqueLongueur.LONGUEUR_MINIMUM] = longueur_minimum
+        resultat[StatistiqueLongueur.LONGUEUR_MAXIMUM] = longueur_maximum
         if self.nb_lignes_analysees != 0:
             resultat[StatistiqueLongueur.LONGUEUR_MOYENNE] = self.somme_longueurs / self.nb_lignes_analysees
         else:
