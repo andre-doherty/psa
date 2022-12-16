@@ -6,10 +6,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import core.engine as engine
-#import core.variables as variables
 import core.stats as statistiques
-from tqdm import tqdm
-
 import sys
 from core import Constantes
 from core.engine import Engine, EngineObserver
@@ -22,7 +19,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
     def __init__(self, filename, line_count):
         self.filename = filename
         self.line_count = line_count
-        self.pbar = tqdm(total=line_count)
+
 
 
     def notifyEngineObserver(self, notification):
@@ -111,11 +108,6 @@ sg.theme('Light Green')     # Please always add color to your window
 file_layout = [[sg.T("")], [sg.Text("Veuillez choisir un fichier: "), sg.Input(key="-IN2-",  change_submits=True),
         sg.FileBrowse("Ouvrir", key="-IN-TAB1")], [sg.Button("Lancer le calcul", key="-LAUNCH-")]
                ]
-#Selection fichier
-
-file_layout = [[sg.T("")], [sg.Text("Veuillez choisir un fichier: "), sg.Input(key="-IN2-",  change_submits=True),
-        sg.FileBrowse("Ouvrir", key="-IN-TAB1")], [sg.Button("Lancer le calcul", key="-LAUNCH-")]
-               ]
 #Table non formatée
 #{:.2f}".format(data.items()
 data={'' : 0}
@@ -135,7 +127,8 @@ table_layout = [
 
 
 #Création d un camembert
-pie_layout = [[sg.Canvas(key='-PIE-',size=(400 , 400),expand_y=True, background_color='Light Green')]]
+pie_layout = [[sg.Canvas(size=(400 , 400),key='-PIE-',expand_y=True, background_color='Light Green')]]
+#Création d un histogramme
 histo_layout = [[sg.Canvas(size=(800 , 400), key='-HISTO-',expand_y=True, background_color='Light Green')]]
 
 tab_group = [
@@ -168,7 +161,7 @@ while True:
             inputfile=values["-IN2-"]
             count_lines = sum(1 for line in open(inputfile, encoding="iso8859-1"))
 
-            sg.popup(count_lines, " lines submitted")
+            #sg.popup(count_lines, " lines submitted")
 
             result=PsaGUI(inputfile, count_lines)
             result.process_analysis(
