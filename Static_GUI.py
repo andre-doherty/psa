@@ -42,7 +42,6 @@ def draw_hist( data,n_bins, titre):
 
     figureObject, axesObject = plt.subplots()
 
-    sg.popup(n_bins)
     axesObject.hist(data.values(),
                    bins=n_bins, density=True, histtype='bar', color='blue', label=data.keys())
     axesObject.set_title(titre)
@@ -93,12 +92,13 @@ table_layout = [
               alternating_row_color='green',
               num_rows=len(data),
               key='-TABLE-',
-              tooltip='Statistiques du fichier')
+              tooltip='Statistiques du fichier',
+              expand_x=True)
      ]
 ]
 
 
-#Créeation d un camembert
+#Création d un camembert
 pie_layout = [[sg.Canvas(key='-PIE-',size=(400 * 2, 400),expand_y=True, background_color='Light Green')]]
 histo_layout = [[sg.Canvas(size=(400 * 2, 400), key='-HISTO-',expand_y=True, background_color='Light Green')]]
 
@@ -121,6 +121,8 @@ tab_group = [
 ]
 
 
+
+
 # Define Window
 window = sg.Window("Password Statistiques Analyzer", tab_group)
 
@@ -131,25 +133,14 @@ while True:
     if event == "Exit" or event == sg.WIN_CLOSED:
         break
     if event == "-LAUNCH-":
+                #sg.popup(values["-IN2-"], "submitted")
+                inputfile=values["-IN2-"]
+                count_lines = sum(1 for line in open(inputfile, encoding="iso8859-1"))
+                #display_results()
+                sg.popup(count_lines, " lines submitted")
 
-while True:
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event == "Exit":
-            break
-        elif event == "Lancer le calcul":
-            window.close()
-            #sg.popup(values["-IN2-"], "submitted")
-            inputfile=values["-IN2-"]
-            count_lines = sum(1 for line in open(inputfile, encoding="iso8859-1"))
-            #display_results()
-            sg.popup(count_lines, " lines submitted")
+                draw_pie(stat2.keys(), stat2.values(), 'Répartition par type de caractères')
+                draw_hist(stat3, 255, 'Répartition des caractères')
 
-            result=PsaGUI(inputfile, count_lines)
-            result.process_analysis(
-                [Constantes.STAT_LONGUEUR, Constantes.STAT_FREQUENCES, Constantes.STAT_CARACTERES])
-            sg.popup(type(result))
-            draw_pie(stat2.keys(), stat2.values(), 'Répartition par type de caractères')
-            draw_hist(stat3, 255, 'Répartition des caractères')
-            break
 
+window.close()
