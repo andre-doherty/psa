@@ -1,4 +1,5 @@
 from core.engine import Engine, EngineObserver
+from core.stats import Statistique
 
 from tqdm import tqdm
 
@@ -30,7 +31,7 @@ class MultidemoRunner(EngineObserver):
         #thread.join()
         #self.long_run(engine)
 
-        engine = Engine([Constantes.STAT_LONGUEUR, Constantes.STAT_FREQUENCES, Constantes.STAT_CARACTERES],
+        engine = Engine([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES],
                         self.filename)
         engine.analyze(Engine.STRATEGIE_MULTITHREADED)
 
@@ -49,6 +50,6 @@ if __name__ == '__main__':
     count_lines = 0
 
     runner = MultidemoRunner(sample, count_lines)
-    runner.process_analysis([Constantes.STAT_LONGUEUR, Constantes.STAT_FREQUENCES, Constantes.STAT_CARACTERES])
+    runner.process_analysis([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES])
     #engine = Engine([Constantes.STAT_LONGUEUR, Constantes.STAT_FREQUENCES, Constantes.STAT_CARACTERES], 'rockyou.txt')
     #engine.analyze(Engine.STRATEGIE_MULTITHREADED)

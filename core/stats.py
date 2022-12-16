@@ -15,6 +15,10 @@ class StatistiqueObserver(ABC):
 
 class Statistique:
 
+    STAT_LONGUEUR = "stat_longueur"
+    STAT_CARACTERES = "stat_caracteres"
+    STAT_FREQUENCES = "stat_frequences"
+
     def __init__(self):
         self.observers = []
 
@@ -85,9 +89,9 @@ class StatistiquesFrequences(Statistique):
         for key in sorted(self.not_ascii):
             if self.nb_caracteres != 0:
                 #tableau_frequences[key] = format((float(self.not_ascii[key])/float(self.nb_caracteres) * 100),'.2f')
-                tableau_frequences[key] = self.not_ascii[key]
+                tableau_frequences[ord(key)] = self.not_ascii[key]
             else:
-                tableau_frequences[key] = "N/A"
+                tableau_frequences[ord(key)] = "N/A"
 
         resultat = dict()
         resultat[StatistiquesFrequences.NB_CARACTERES] = self.nb_caracteres

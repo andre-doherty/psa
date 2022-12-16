@@ -1,7 +1,6 @@
 import fileinput
 from abc import ABC, abstractmethod
 
-from core import Constantes
 from core.stats import StatistiqueLongueur, StatistiqueCaracteres, StatistiquesFrequences, Statistique
 
 import multiprocessing as mp, os
@@ -31,12 +30,12 @@ class Engine:
 
         self.statistics = dict()
         for demanded_stat in demanded_stats:
-            if demanded_stat == Constantes.STAT_LONGUEUR:
-                self.statistics[Constantes.STAT_LONGUEUR] = StatistiqueLongueur()
-            if demanded_stat == Constantes.STAT_CARACTERES:
-                self.statistics[Constantes.STAT_CARACTERES] = StatistiqueCaracteres()
-            if demanded_stat == Constantes.STAT_FREQUENCES:
-                self.statistics[Constantes.STAT_FREQUENCES] = StatistiquesFrequences()
+            if demanded_stat == Statistique.STAT_LONGUEUR:
+                self.statistics[Statistique.STAT_LONGUEUR] = StatistiqueLongueur()
+            if demanded_stat == Statistique.STAT_CARACTERES:
+                self.statistics[Statistique.STAT_CARACTERES] = StatistiqueCaracteres()
+            if demanded_stat == Statistique.STAT_FREQUENCES:
+                self.statistics[Statistique.STAT_FREQUENCES] = StatistiquesFrequences()
 
     def get_statistiques(self):
         return self.statistics
@@ -70,9 +69,9 @@ class Engine:
 
             statistiques = dict()
 
-            statistiques[Constantes.STAT_LONGUEUR] = StatistiqueLongueur()
-            statistiques[Constantes.STAT_CARACTERES] = StatistiqueCaracteres()
-            statistiques[Constantes.STAT_FREQUENCES] = StatistiquesFrequences()
+            statistiques[Statistique.STAT_LONGUEUR] = StatistiqueLongueur()
+            statistiques[Statistique.STAT_CARACTERES] = StatistiqueCaracteres()
+            statistiques[Statistique.STAT_FREQUENCES] = StatistiquesFrequences()
             self._process(statistiques, lines)
 
             for statistique_name in statistiques:
@@ -162,8 +161,7 @@ class Engine:
                     chunk[-1] = chunk[-1] + endofstring
                     offset = f.tell()
 
-                count_paquet = len(chunk)
-                self._process(self.statistics, chunk, count_paquet)
+                self._process(self.statistics, chunk)
                 return offset
             else:
                 return -1
