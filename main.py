@@ -2,11 +2,8 @@ from core import Constantes
 from core.engine import Engine, EngineObserver
 #from log4python.Log4python import log
 from tqdm import tqdm
-import multiprocessing as mp
+
 import threading
-
-# pip install tqdm
-
 
 from core.stats import StatistiqueObserver
 
@@ -32,7 +29,7 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
     @staticmethod
     def long_run(engine):
-        engine.analyze(Engine.STRATEGIE_BLOCK)
+        engine.analyze(Engine.STRATEGIE_MULTITHREADED)
 
     def process_analysis(self, demanded_statistiques):
 

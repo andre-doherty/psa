@@ -192,8 +192,12 @@ class StatistiqueLongueur(Statistique):
 
         sorted_longueurs = sorted(self.tab_longueurs)
 
-        longueur_minimum = sorted_longueurs[0]
-        longueur_maximum = sorted_longueurs[-1]
+        if (len(self.tab_longueurs) != 0):
+            longueur_minimum = sorted_longueurs[0]
+            longueur_maximum = sorted_longueurs[-1]
+        else:
+            longueur_minimum = 0
+            longueur_maximum = 0
 
         for longueur in sorted_longueurs :
             repartition[longueur] = self.tab_longueurs[longueur]
