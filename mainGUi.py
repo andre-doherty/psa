@@ -14,6 +14,7 @@ from core.stats import Statistique, StatistiqueObserver, StatistiqueLongueur, St
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import threading
 
+
 matplotlib.use('TkAgg')
 class PsaGUI(EngineObserver, StatistiqueObserver) :
 
@@ -32,16 +33,23 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         self.window.write_event_value('-THREAD-', '*** The thread says.... "I am finished" ***')
 
     def draw_figure(self, canvas, figure):
+        if hasattr(self, 'figure_canvas_agg'):
+            figure_canvas_agg.get_tk_widget().pack_forget()
+
         figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+        sg.popup(figure, canvas)
+        figure_canvas_agg.get_tk_widget().pack_forget() #
+
         figure_canvas_agg.draw()
+        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=False)
         return figure_canvas_agg
 
     def draw_pie(self, entete, data, titre):
         explode = [0.3]
         explode = explode * len(data)
         # graph pie using matplotlib
-        figureObject, axesObject = plt.subplots()
+
+        figureObject, axesObject = plt.subplots(1,1)
         axesObject.pie(data,
                        labels=entete,
                        startangle=60,
@@ -53,19 +61,19 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         self.draw_figure(self.window['-PIE-'].TKCanvas, figureObject)
 
     def draw_hist(self, data, titre):
-        figureObject, axesObject = plt.subplots()
+        sg.popup(self.window['-HISTO-'].TKCanvas)
 
-        axesObject.bar( data.keys(),data.values(),width=1, color='green')
+        figureObject, axesObject = plt.subplots(1,1,figsize=(8,2))
+        char_keys = [chr(key) for key in data.keys()]
+        axesObject.bar( char_keys,data.values(),width=1, color='green')
         axesObject.set_title(titre)
-
+       # axesObject.set_yscale('log')
+        figureObject.legend()
+        plt.tight_layout()
         self.draw_figure(self.window['-HISTO-'].TKCanvas, figureObject)
 
     def create_gui(self):
         sg.theme('Green')  # Add a touch of color
-        # All the stuff inside your window.
-        # default text used to get a default file , to be removed before prod default_text='C:\code\smallRYou.txt',
-        # Fenetre principale
-        window = sg.Window('Analyseur de mots de passe')
         plt.style.use('Solarize_Light2')
 
         # Simple example of TabGroup element and the options available to it
@@ -100,7 +108,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         # Création d un camembert
         pie_layout = [[sg.Canvas( key='-PIE-', expand_y=True, background_color='Light Green')]]
         # Création d un histogramme
-        histo_layout = [[sg.Canvas( key='-HISTO-', expand_y=True, background_color='Light Green')]]
+        histo_layout = [[sg.Canvas( key='-HISTO-', expand_x=True, expand_y=True, background_color='Light Green')]]
 
         tab_group = [
             [sg.TabGroup(
