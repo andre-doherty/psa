@@ -52,16 +52,13 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         axesObject.axis('equal')
         self.draw_figure(self.window['-PIE-'].TKCanvas, figureObject)
 
-    def draw_hist(self, data, n_bins, titre):
+    def draw_hist(self, data, titre):
         figureObject, axesObject = plt.subplots()
-        axesObject.hist(data.values(),
-                       bins=n_bins, density=True, histtype='bar', color='blue', label=data.keys())
+
+        axesObject.bar( data.values(),data.keys(), color='green')
         axesObject.set_title(titre)
-        for s in ['top', 'bottom', 'left', 'right']:
-            axesObject.spines[s].set_visible(False)
-        # Remove x, y ticks
-        axesObject.xaxis.set_ticks_position('none')
-        axesObject.yaxis.set_ticks_position('none')
+
+
 
         self.draw_figure(self.window['-HISTO-'].TKCanvas, figureObject)
 
@@ -158,7 +155,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     data[StatistiqueLongueur.LONGUEUR_MAXIMUM] = resultat_longueur[StatistiqueLongueur.LONGUEUR_MAXIMUM]
                     data[StatistiqueLongueur.LONGUEUR_MOYENNE]= round(resultat_longueur[StatistiqueLongueur.LONGUEUR_MOYENNE],2)
                     data['Nombre de Mots de passe'] = count_lines
-                    sg.popup("Longueur", data)
+
                     stat_caracteres = statistiques[Engine.STAT_CARACTERES]
                     resultat_caracteres = stat_caracteres.restituer_statistiques()
 
@@ -173,11 +170,14 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     # frozenset((key, freeze(value)) for key, value in d.items()
 
                     stat3 = resultat_frequences[StatistiquesFrequences.TABLEAU_FREQUENCES]
-                    sg.popup("Frequences K", stat3.keys())
-                    sg.popup("Frequences V", stat3.values())
+
+                    stat3 = dict(stat3)
+                    for key, value in stat3.items():
+                        stat3[key] = float(value)
                     self.window['-TABLE-'].update(values=data.items())
                     self.draw_pie(stat2.keys(), stat2.values(), 'Répartition par type de caractères')
-                    self.draw_hist(stat3, 255, 'Répartition des caractères')
+                    #self.draw_hist(stat3, 255, 'Répartition des caractères')
+                    self.draw_hist(stat3, 'Répartition des caractères')
 
         self.window.close()
 
