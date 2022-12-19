@@ -23,6 +23,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
 
     def notifyEngineObserver(self, notification):
         lines_processed = notification[EngineObserver.LINES_PROCESSED]
+
         self.window['-STATUS-'].update(value=lines_processed)
 
     def notifyStatistiqueObserver(self, notification):
@@ -37,7 +38,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
             figure_canvas_agg.get_tk_widget().pack_forget()
 
         figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-        sg.popup(figure, canvas)
+
         figure_canvas_agg.get_tk_widget().pack_forget() #
 
         figure_canvas_agg.draw()
@@ -49,8 +50,8 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         explode = explode * len(data)
         # graph pie using matplotlib
 
-        figureObject, axesObject = plt.subplots(1,1)
-        axesObject.cla()
+        figureObject, axesObject = plt.subplots(nrows=1,ncols=1,figsize=(15,8))
+
         axesObject.pie(data,
                        labels=entete,
                        startangle=60,
@@ -62,9 +63,8 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         self.draw_figure(self.window['-PIE-'].TKCanvas, figureObject)
 
     def draw_hist(self, data, titre):
-        sg.popup(self.window['-HISTO-'].TKCanvas)
 
-        figureObject, axesObject = plt.subplots(1, 1)
+        figureObject, axesObject = plt.subplots(nrows=1,ncols=1,figsize=(15,8))
         char_keys = [chr(key) for key in data.keys()]
         axesObject.bar( char_keys,data.values(),width=1, color='green')
         axesObject.set_title(titre)
@@ -130,7 +130,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         ]
 
         # Define Window
-        window = sg.Window("Password Statistiques Analyzer", tab_group, resizable=True, finalize=True)
+        window = sg.Window("Password Statistiques Analyzer", tab_group, resizable=True, finalize=True,size=(1024, 600))
         window.bind('<Configure>', "Event")
         return window
 
@@ -142,8 +142,9 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     break
                 elif event == "-LAUNCH-":
                     filename=values["-IN2-"]
+
                     count_lines = sum(1 for line in open(filename, encoding="iso8859-1"))
-                    self.window.FindElement('-LAUNCH-').Update(disabled=True)
+                    self.window['-LAUNCH-'].Update(disabled=True)
                     self.engine = Engine([Engine.STAT_LONGUEUR, Engine.STAT_FREQUENCES, Engine.STAT_CARACTERES], filename=filename)
                     self.engine.register_observer(self)
 
@@ -187,7 +188,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     self.draw_pie(stat2.keys(), stat2.values(), 'Répartition par type de caractères')
                     #self.draw_hist(stat3, 255, 'Répartition des caractères')
                     self.draw_hist(stat3, 'Répartition des caractères')
-                    self.window.FindElement('-LAUNCH-').Update(disabled=False)
+                    self.window['-LAUNCH-'].Update(disabled=False)
 
         self.window.close()
 
