@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import core.engine as engine
 import core.stats as statistiques
 import sys
-from core import Constantes
 from core.engine import Engine, EngineObserver
 from core.stats import Statistique, StatistiqueObserver, StatistiqueLongueur, StatistiquesFrequences, StatistiqueCaracteres
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -39,7 +38,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         return figure_canvas_agg
 
     def draw_pie(self, entete, data, titre):
-        explode = [0.2]
+        explode = [0.3]
         explode = explode * len(data)
         # graph pie using matplotlib
         figureObject, axesObject = plt.subplots()
@@ -103,9 +102,9 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         ]
 
         # Création d un camembert
-        pie_layout = [[sg.Canvas(size=(400, 400), key='-PIE-', expand_y=True, background_color='Light Green')]]
+        pie_layout = [[sg.Canvas( key='-PIE-', expand_y=True, background_color='Light Green')]]
         # Création d un histogramme
-        histo_layout = [[sg.Canvas(size=(800, 400), key='-HISTO-', expand_y=True, background_color='Light Green')]]
+        histo_layout = [[sg.Canvas( key='-HISTO-', expand_y=True, background_color='Light Green')]]
 
         tab_group = [
             [sg.TabGroup(
@@ -157,8 +156,9 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     data = dict()
                     data[StatistiqueLongueur.LONGUEUR_MINIMUM] = resultat_longueur[StatistiqueLongueur.LONGUEUR_MINIMUM]
                     data[StatistiqueLongueur.LONGUEUR_MAXIMUM] = resultat_longueur[StatistiqueLongueur.LONGUEUR_MAXIMUM]
-                    data[StatistiqueLongueur.LONGUEUR_MOYENNE]= resultat_longueur[StatistiqueLongueur.LONGUEUR_MOYENNE]
-
+                    data[StatistiqueLongueur.LONGUEUR_MOYENNE]= round(resultat_longueur[StatistiqueLongueur.LONGUEUR_MOYENNE],2)
+                    data['Nombre de Mots de passe'] = count_lines
+                    sg.popup("Longueur", data)
                     stat_caracteres = statistiques[Engine.STAT_CARACTERES]
                     resultat_caracteres = stat_caracteres.restituer_statistiques()
 
@@ -173,7 +173,8 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     # frozenset((key, freeze(value)) for key, value in d.items()
 
                     stat3 = resultat_frequences[StatistiquesFrequences.TABLEAU_FREQUENCES]
-
+                    sg.popup("Frequences K", stat3.keys())
+                    sg.popup("Frequences V", stat3.values())
                     self.window['-TABLE-'].update(values=data.items())
                     self.draw_pie(stat2.keys(), stat2.values(), 'Répartition par type de caractères')
                     self.draw_hist(stat3, 255, 'Répartition des caractères')
