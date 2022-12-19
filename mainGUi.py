@@ -55,10 +55,8 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
     def draw_hist(self, data, titre):
         figureObject, axesObject = plt.subplots()
 
-        axesObject.bar( data.values(),data.keys(), color='green')
+        axesObject.bar( data.keys(),data.values(),width=1, color='green')
         axesObject.set_title(titre)
-
-
 
         self.draw_figure(self.window['-HISTO-'].TKCanvas, figureObject)
 
@@ -78,7 +76,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         file_layout = [[sg.T("")],
                        [sg.Text("Veuillez choisir un fichier: "), sg.Input(key="-IN2-", change_submits=True),
                         sg.FileBrowse("Ouvrir", key="-IN-TAB1")], [sg.Button("Lancer le calcul", key="-LAUNCH-")],
-                        [sg.Output(50, key="-STATUS-")]
+                        [sg.Text("Bloc traité", size=(0,1), key="-STATUS-")]
                        ]
 
         # Table non formatée
@@ -94,7 +92,8 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                       key='-TABLE-',
                       tooltip='Statistiques du fichier',
                       expand_x=True,
-                      background_color='LightGreen')
+                      background_color='LightGreen',
+                      text_color='red')
              ]
         ]
 
@@ -113,7 +112,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                          tooltip='Grande Familles de caractères', element_justification='center'),
                   sg.Tab('Distribution des charactères', histo_layout, title_color='Black',
                          background_color='Light Green',
-                         tooltip='See all your contacts', element_justification='center')]],
+                         tooltip='Répartition des Charactères', element_justification='center')]],
 
                 tab_location='centertop',
                 title_color='White', tab_background_color='Green', selected_title_color='Red',
@@ -141,6 +140,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
 
                     thread = threading.Thread(target=self.long_run, args=(Engine.STRATEGIE_BLOCK,), daemon=True)
                     thread.start()
+
 
                 elif event == "-THREAD-":
 
