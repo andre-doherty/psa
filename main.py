@@ -19,9 +19,14 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
         self.line_count = line_count
         self.pbar = tqdm(total=line_count)
 
+        self.total_lines_processed = 0
+
     def notifyEngineObserver(self, notification):
         lines_processed = notification[EngineObserver.LINES_PROCESSED]
-        self.pbar.update(lines_processed)
+        self.total_lines_processed += lines_processed
+        print (lines_processed, "total=", self.total_lines_processed)
+
+        #self.pbar.update(lines_processed)
 
     def notifyStatistiqueObserver(self, notification):
         #print("notified!")
@@ -33,7 +38,7 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
     def process_analysis(self, demanded_statistiques):
 
-        engine = Engine(demanded_statistiques, filename=self.filename, paquet=2048*1024)
+        engine = Engine(demanded_statistiques, filename=self.filename, paquet=10*1048*1024)
         engine.register_observer(self)
 
         statistiques = engine.get_statistiques()
@@ -56,13 +61,13 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 if __name__ == '__main__':
     #sample = 'smallrock.txt'
     sample = 'rockyou.txt'
-    #sample = 'c:\\users\\adohe\\Downloads\\rockyou2021.txt'
+    #sample = 'rockyou2021.txt'
 
     #count_lines = sum(1 for line in open(sample ,encoding="iso8859-1"))
     count_lines = 0
 
     consoleGui = ConsoleGUI(sample, count_lines)
-    consoleGui.process_analysis([Constantes.STAT_LONGUEUR, Constantes.STAT_FREQUENCES, Constantes.STAT_CARACTERES])
+    consoleGui.process_analysis([Engine.STAT_LONGUEUR, Engine.STAT_FREQUENCES, Engine.STAT_CARACTERES])
     #consoleGui.process_analysis([Constantes.STAT_FREQUENCES])
 
     #pbar = tqdm(total=count_lines)

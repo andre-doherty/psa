@@ -127,7 +127,8 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         ]
 
         # Define Window
-        window = sg.Window("Password Statistiques Analyzer", tab_group)
+        window = sg.Window("Password Statistiques Analyzer", tab_group, resizable=True, finalize=True)
+        window.bind('<Configure>', "Event")
         return window
 
     def display(self):
@@ -140,7 +141,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     filename=values["-IN2-"]
                     count_lines = sum(1 for line in open(filename, encoding="iso8859-1"))
 
-                    self.engine = Engine([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES], filename=filename)
+                    self.engine = Engine([Engine.STAT_LONGUEUR, Engine.STAT_FREQUENCES, Engine.STAT_CARACTERES], filename=filename)
                     self.engine.register_observer(self)
 
                     thread = threading.Thread(target=self.long_run, args=(Engine.STRATEGIE_BLOCK,), daemon=True)
@@ -151,7 +152,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     statistiques = self.engine.get_statistiques()
 
                     # traitement du resultat longueur
-                    stat_longueur = statistiques[Statistique.STAT_LONGUEUR]
+                    stat_longueur = statistiques[Engine.STAT_LONGUEUR]
                     resultat_longueur = stat_longueur.restituer_statistiques()
 
                     data = dict()
@@ -159,7 +160,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     data[StatistiqueLongueur.LONGUEUR_MAXIMUM] = resultat_longueur[StatistiqueLongueur.LONGUEUR_MAXIMUM]
                     data[StatistiqueLongueur.LONGUEUR_MOYENNE]= resultat_longueur[StatistiqueLongueur.LONGUEUR_MOYENNE]
 
-                    stat_caracteres = statistiques[Statistique.STAT_CARACTERES]
+                    stat_caracteres = statistiques[Engine.STAT_CARACTERES]
                     resultat_caracteres = stat_caracteres.restituer_statistiques()
 
                     stat2 = dict()
@@ -168,7 +169,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     stat2[StatistiqueCaracteres.NB_MINUSCULES] = resultat_caracteres[StatistiqueCaracteres.NB_MINUSCULES]
                     stat2[StatistiqueCaracteres.NB_NUMERIQUES] = resultat_caracteres[StatistiqueCaracteres.NB_NUMERIQUES]
 
-                    stat_frequences = statistiques[Statistique.STAT_FREQUENCES]
+                    stat_frequences = statistiques[Engine.STAT_FREQUENCES]
                     resultat_frequences = stat_frequences.restituer_statistiques()
                     # frozenset((key, freeze(value)) for key, value in d.items()
 

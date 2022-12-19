@@ -18,10 +18,10 @@ class MultidemoRunner(EngineObserver):
 
     def process_analysis(self, demanded_statistiques):
 
-        engine = Engine(demanded_statistiques, filename=self.filename, paquet=50*1048*1024)
-        engine.register_observer(self)
+        #engine = Engine(demanded_statistiques, filename=self.filename, paquet=50*1048*1024)
+        #engine.register_observer(self)
 
-        statistiques = engine.get_statistiques()
+
         #stat = statistiques[Constantes.STAT_LONGUEUR]
         #stat.register_listener(self)
 
@@ -31,9 +31,13 @@ class MultidemoRunner(EngineObserver):
         #thread.join()
         #self.long_run(engine)
 
-        engine = Engine([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES],
-                        self.filename)
+        engine = Engine([Engine.STAT_LONGUEUR, Engine.STAT_FREQUENCES, Engine.STAT_CARACTERES],
+                        self.filename, paquet=50*1048*1024)
+
+        #engine.register_observer(self)
         engine.analyze(Engine.STRATEGIE_MULTITHREADED)
+
+        statistiques = engine.get_statistiques()
 
         for statistique_name in statistiques:
             statistique = statistiques[statistique_name]
@@ -50,6 +54,6 @@ if __name__ == '__main__':
     count_lines = 0
 
     runner = MultidemoRunner(sample, count_lines)
-    runner.process_analysis([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES])
+    runner.process_analysis([Engine.STAT_LONGUEUR, Engine.STAT_FREQUENCES, Engine.STAT_CARACTERES])
     #engine = Engine([Constantes.STAT_LONGUEUR, Constantes.STAT_FREQUENCES, Constantes.STAT_CARACTERES], 'rockyou.txt')
     #engine.analyze(Engine.STRATEGIE_MULTITHREADED)

@@ -1,9 +1,6 @@
 import time
 from abc import abstractmethod, ABC
 
-from core import Constantes
-
-
 class StatistiqueObserver(ABC):
 
     TIMESTAMP = "timestamp"
@@ -14,10 +11,6 @@ class StatistiqueObserver(ABC):
         pass
 
 class Statistique:
-
-    STAT_LONGUEUR = "stat_longueur"
-    STAT_CARACTERES = "stat_caracteres"
-    STAT_FREQUENCES = "stat_frequences"
 
     def __init__(self):
         self.observers = []
@@ -98,6 +91,17 @@ class StatistiquesFrequences(Statistique):
         resultat[StatistiquesFrequences.TABLEAU_FREQUENCES] = tableau_frequences
         return resultat
 
+    def merge(self, stat):
+        statistique = StatistiquesFrequences()
+        statistique = stat
+        self.nb_caracteres += statistique.nb_caracteres
+        statistique_tab_caracteres = statistique.not_ascii
+        for key in statistique_tab_caracteres:
+            if key in self.not_ascii:
+                self.not_ascii[key] = self.not_ascii[key] + statistique_tab_caracteres[key]
+            else:
+                self.not_ascii[key] = statistique_tab_caracteres[key]
+
 
 class StatistiqueCaracteres(Statistique):
     """Donne des statistiques sur l'usage des caractères (majuscules, minuscules, numériques, symboles"""
@@ -153,6 +157,16 @@ class StatistiqueCaracteres(Statistique):
 
         return resultat
 
+    def merge(self, stat):
+        statistique = StatistiqueCaracteres()
+        statistique = stat
+        self.nb_majuscules += statistique.nb_majuscules
+        self.nb_minuscules += statistique.nb_minuscules
+        self.nb_symboles += statistique.nb_symboles
+        self.nb_numeriques += statistique.nb_numeriques
+        self.total_caracteres += statistique.total_caracteres
+
+
 class StatistiqueLongueur(Statistique):
     """Donne des statistiques sur les chaines analysees : longueur max, min, moyenne"""
 
@@ -162,8 +176,6 @@ class StatistiqueLongueur(Statistique):
     REPARTITION = "repartition"
 
     def __init__(self):
-        self.longueur_minimum = 100000000
-        self.longueur_maximum = 0
         self.somme_longueurs = 0
         self.nb_lignes_analysees = 0
 
@@ -217,3 +229,15 @@ class StatistiqueLongueur(Statistique):
             resultat[StatistiqueLongueur.LONGUEUR_MOYENNE] = "N/A"
 
         return resultat
+
+    def merge(self, stat):
+        statistique = StatistiqueLongueur()
+        statistique = stat
+        self.somme_longueurs += statistique.somme_longueurs
+        self.nb_lignes_analysees += statistique.nb_lignes_analysees
+        statistique_tab_longueur = statistique.tab_longueurs
+        for key in statistique_tab_longueur:
+            if key in self.tab_longueurs:
+                self.tab_longueurs[key] = self.tab_longueurs[key] + statistique_tab_longueur[key]
+            else:
+                self.tab_longueurs[key] = statistique_tab_longueur[key]
