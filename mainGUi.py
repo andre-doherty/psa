@@ -122,7 +122,6 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                 tab_location='centertop',
                 title_color='White', tab_background_color='Green', selected_title_color='Red',
                 selected_background_color='Orange', border_width=5)
-                , sg.Button('Exit')
             ]
         ]
 
@@ -135,7 +134,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
 
         while True:
                 event, values = self.window.read()
-                if event == sg.WIN_CLOSED or event == "Exit":
+                if event == sg.WIN_CLOSED :
                     break
                 elif event == "-LAUNCH-":
                     filename=values["-IN2-"]
