@@ -50,6 +50,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         # graph pie using matplotlib
 
         figureObject, axesObject = plt.subplots(1,1)
+        axesObject.cla()
         axesObject.pie(data,
                        labels=entete,
                        startangle=60,
@@ -63,7 +64,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
     def draw_hist(self, data, titre):
         sg.popup(self.window['-HISTO-'].TKCanvas)
 
-        figureObject, axesObject = plt.subplots(1,1,figsize=(8,2))
+        figureObject, axesObject = plt.subplots(1, 1)
         char_keys = [chr(key) for key in data.keys()]
         axesObject.bar( char_keys,data.values(),width=1, color='green')
         axesObject.set_title(titre)
@@ -142,7 +143,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                 elif event == "-LAUNCH-":
                     filename=values["-IN2-"]
                     count_lines = sum(1 for line in open(filename, encoding="iso8859-1"))
-
+                    self.window.FindElement('-LAUNCH-').Update(disabled=True)
                     self.engine = Engine([Engine.STAT_LONGUEUR, Engine.STAT_FREQUENCES, Engine.STAT_CARACTERES], filename=filename)
                     self.engine.register_observer(self)
 
@@ -186,6 +187,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                     self.draw_pie(stat2.keys(), stat2.values(), 'Répartition par type de caractères')
                     #self.draw_hist(stat3, 255, 'Répartition des caractères')
                     self.draw_hist(stat3, 'Répartition des caractères')
+                    self.window.FindElement('-LAUNCH-').Update(disabled=False)
 
         self.window.close()
 
