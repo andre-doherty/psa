@@ -1,4 +1,3 @@
-from core import Constantes
 from core.engine import Engine, EngineObserver
 #from log4python.Log4python import log
 from tqdm import tqdm
