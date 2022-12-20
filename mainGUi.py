@@ -22,6 +22,8 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
 
     def __init__(self):
         self.window = self.create_gui()
+        self.pie_figure_canvasTkAgg = None
+        self.histo_figure_canvasTkAgg = None
 
     def notifyEngineObserver(self, notification):
         lines_processed = notification[EngineObserver.LINES_PROCESSED]
@@ -36,16 +38,10 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         self.window.write_event_value('-THREAD-', '*** The thread says.... "I am finished" ***')
 
     def draw_figure(self, canvas, figure):
-        if hasattr(self, 'figure_canvas_agg'):
-            figure_canvas_agg.get_tk_widget().pack_forget()
-            self.figure_canvas_agg.figure.clear()
-            sg.popup('Nettoyage de la figure précédente')
-
-
-        figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-        figure_canvas_agg.draw()
-        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=False)
-        return figure_canvas_agg
+        figureCanvasTkAgg = FigureCanvasTkAgg(figure, canvas)
+        figureCanvasTkAgg.draw()
+        figureCanvasTkAgg.get_tk_widget().pack(side='top', fill='both', expand=False)
+        return figureCanvasTkAgg
 
     def draw_pie(self, entete, data, titre):
         explode = [0.3]
@@ -62,7 +58,11 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                        explode=explode)
         axesObject.set_title(titre)
         axesObject.axis('equal')
-        self.draw_figure(self.window['-PIE-'].TKCanvas, figureObject)
+
+        if self.pie_figure_canvasTkAgg != None:
+            self.pie_figure_canvasTkAgg.figure.canvas._tkcanvas.destroy()
+
+        self.pie_figure_canvasTkAgg = self.draw_figure(self.window['-PIE-'].TKCanvas, figureObject)
 
     def draw_hist(self, data, titre):
 
@@ -73,7 +73,11 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
        # axesObject.set_yscale('log')
         figureObject.legend()
         plt.tight_layout()
-        self.draw_figure(self.window['-HISTO-'].TKCanvas, figureObject)
+
+        if self.histo_figure_canvasTkAgg != None:
+            self.histo_figure_canvasTkAgg.figure.canvas._tkcanvas.destroy()
+
+        self.histo_figure_canvasTkAgg= self.draw_figure(self.window['-HISTO-'].TKCanvas, figureObject)
 
     def create_gui(self):
         sg.theme('Green')  # Add a touch of color
@@ -125,9 +129,11 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
              ]
         ]
         # Création d un camembert
-        pie_layout = [[sg.Canvas( key='-PIE-', expand_y=True, background_color='Light Green')]]
+        self.canvas_categories = sg.Canvas( key='-PIE-', expand_y=True, background_color='Light Green')
+        pie_layout = [[self.canvas_categories]]
         # Création d un histogramme
-        histo_layout = [[sg.Canvas( key='-HISTO-', expand_x=True, expand_y=True, background_color='Light Green')]]
+        self.canvas_repartition = sg.Canvas( key='-HISTO-', expand_x=True, expand_y=True, background_color='Light Green')
+        histo_layout = [[self.canvas_repartition]]
 
         tab_group = [
             [sg.TabGroup(
@@ -139,7 +145,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                          tooltip='Grande Familles de caractères', element_justification='center'),
                   sg.Tab('Distribution des charactères', histo_layout, title_color='Black',
                          background_color='Light Green',
-                         tooltip='Répartition des Charactères', element_justification='center'),
+                         tooltip='Répartition des Caractères', element_justification='center'),
                   sg.Tab('Table de Distribution', tablehist_layout, title_color='Black', background_color='Light Green',
                          tooltip='Statistiques principales du fichier', element_justification='center')
                   ]],
@@ -153,6 +159,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         # Define Window
         window = sg.Window("Password Statistiques Analyzer", tab_group, resizable=True, finalize=True,size=(1024, 600))
         window.bind('<Configure>', "Event")
+
         return window
 
     def display(self):
