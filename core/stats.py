@@ -11,6 +11,9 @@ class StatistiqueObserver(ABC):
         pass
 
 class Statistique:
+    STAT_LONGUEUR = "stat_longueur"
+    STAT_CARACTERES = "stat_caracteres"
+    STAT_FREQUENCES = "stat_frequences"
 
     def __init__(self):
         self.observers = []
@@ -61,7 +64,7 @@ class StatistiquesFrequences(Statistique):
         Statistique.__init__(self)
 
     def get_type(self):
-        return Constantes.STAT_FREQUENCES
+        return Statistique.STAT_FREQUENCES
 
     def calculer(self, chaines):
         for chaine in chaines:
@@ -125,7 +128,7 @@ class StatistiqueCaracteres(Statistique):
         Statistique.__init__(self)
 
     def get_type(self):
-        return Constantes.STAT_CARACTERES
+        return Statistique.STAT_CARACTERES
 
     def calculer(self, chaines):
         for chaine in chaines:
@@ -184,7 +187,7 @@ class StatistiqueLongueur(Statistique):
         Statistique.__init__(self)
 
     def get_type(self):
-        return Constantes.STAT_LONGUEUR
+        return Statistique.STAT_LONGUEUR
 
     def calculer(self, chaines):
         for chaine in chaines:
