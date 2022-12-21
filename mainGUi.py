@@ -104,7 +104,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                       tooltip='Statistiques du fichier',
                       expand_x=True,
                       background_color='LightGreen',
-                      text_color='red')
+                      text_color='white')
              ]
         ]
 
