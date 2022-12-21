@@ -248,6 +248,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         stat_frequences_model = resultat_frequences[StatistiquesFrequences.TABLEAU_FREQUENCES]
 
         stat_frequences_model_h = dict(stat_frequences_model)
+
         list_stat_frequences_model_h = sorted(stat_frequences_model_h.items(),key=lambda item: int(item[1]), reverse=True)
         sorted_stat_frequences_model_h = dict()
         for (k,v) in list_stat_frequences_model_h:
@@ -256,7 +257,10 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         self.window['-TABLE-'].update(values=stat_generales_model.items())
         self.draw_pie(stat_caracteres_model.keys(), stat_caracteres_model.values(), filename)
         self.draw_hist(stat_frequences_model, filename)
-        self.window['-TABLEH-'].update(values=[[k, chr(k), format((float(v)/float(nb_total_caracteres) * 100),'.2f'), v] for k, v in sorted_stat_frequences_model_h.items()])
+
+        filtered_items = filter(lambda item: item[1] != 0, sorted_stat_frequences_model_h.items())
+        self.window['-TABLEH-'].update(values=[[k, chr(k) if str.isprintable(chr(k)) else 'NA', format((float(v)/float(nb_total_caracteres) * 100),'.2f'), v] for k, v in filtered_items])
+
 
 if __name__ == '__main__':
     gui = PsaGUI()
