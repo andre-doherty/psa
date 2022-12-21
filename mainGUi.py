@@ -110,7 +110,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
 
         tablehist_layout = [
             [sg.Table(values=data.items(),
-                      headings=['Code Ascii','Char', 'Fréquence'],
+                      headings=['Code Ascii','Char', 'Fréquence', 'Occurence'],
                       auto_size_columns=True,
                       justification='center',
                       alternating_row_color='green',
@@ -247,13 +247,13 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         stat_frequences_model = resultat_frequences[StatistiquesFrequences.TABLEAU_FREQUENCES]
 
         stat_frequences_model_h = dict(stat_frequences_model)
-        for key, value in stat_frequences_model_h.items():
-            stat_frequences_model_h[key] = format((float(value)/float(nb_total_caracteres) * 100),'.2f')
+        #for key, value in stat_frequences_model_h.items():
+        #    stat_frequences_model_h[key] = format((float(value)/float(nb_total_caracteres) * 100),'.2f')
 
         self.window['-TABLE-'].update(values=stat_generales_model.items())
         self.draw_pie(stat_caracteres_model.keys(), stat_caracteres_model.values(), filename)
         self.draw_hist(stat_frequences_model, filename)
-        self.window['-TABLEH-'].update(values=[[k, chr(k), v] for k, v in stat_frequences_model_h.items()])
+        self.window['-TABLEH-'].update(values=[[k, chr(k), format((float(v)/float(nb_total_caracteres) * 100),'.2f'), v] for k, v in stat_frequences_model_h.items()])
 
 
 
