@@ -43,6 +43,15 @@ class Engine:
             if demanded_stat == Statistique.STAT_FREQUENCES:
                 self.statistics[Statistique.STAT_FREQUENCES] = StatistiquesFrequences()
 
+    def get_nb_lignes_traitees(self):
+        return self.nb_lignes_traitees
+
+    def get_total_byte_processed(self):
+        return self.total_bytes_processed
+
+    def get_total_bytes_to_process(self):
+        return self.total_bytes_to_process
+
     def get_statistiques(self):
         return self.statistics
 

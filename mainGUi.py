@@ -193,15 +193,17 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
 
                     refresh += 1
                     if refresh == 10:
-                        self.update_visualisation(notification[EngineObserver.CURRENT_STATISTICS_STATE], filename, count_lines)
+                        self.update_visualisation(notification[EngineObserver.CURRENT_STATISTICS_STATE], filename, lines_processed)
                         refresh = 0
 
                 elif event == "-THREAD-":
 
                     self.window['-STATUS-'].update(value="Terminé")
 
+                    lines_processed = self.engine.get_nb_lignes_traitees()
+
                     statistiques = self.engine.get_statistiques()
-                    self.update_visualisation(statistiques, filename, count_lines)
+                    self.update_visualisation(statistiques, filename, lines_processed)
 
                     self.window['-LAUNCH-'].Update(disabled=False)
 
@@ -221,7 +223,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
             StatistiqueLongueur.LONGUEUR_MAXIMUM]
         stat_generales_model[StatistiqueLongueur.LONGUEUR_MOYENNE] = round(
             resultat_longueur[StatistiqueLongueur.LONGUEUR_MOYENNE], 2)
-        stat_generales_model['Nombre de Mots de passe'] = count_lines
+        stat_generales_model['Nombre de Mots de passe traités'] = count_lines
 
         stat_caracteres = statistiques[Statistique.STAT_CARACTERES]
         resultat_caracteres = stat_caracteres.restituer_statistiques()
