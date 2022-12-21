@@ -191,13 +191,14 @@ class StatistiqueLongueur(Statistique):
 
     def calculer(self, chaines):
         for chaine in chaines:
-            longueur_chaine = len(chaine)
-            if longueur_chaine in self.tab_longueurs:
-                compteur = self.tab_longueurs[longueur_chaine]
-                compteur += 1
-                self.tab_longueurs[longueur_chaine] = compteur
-            else:
-                self.tab_longueurs[longueur_chaine] = 1
+            longueur_chaine = len(chaine.strip())
+            if longueur_chaine != 0:
+                if longueur_chaine in self.tab_longueurs:
+                    compteur = self.tab_longueurs[longueur_chaine]
+                    compteur += 1
+                    self.tab_longueurs[longueur_chaine] = compteur
+                else:
+                    self.tab_longueurs[longueur_chaine] = 1
 
             self.somme_longueurs += longueur_chaine
             self.nb_lignes_analysees += 1

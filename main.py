@@ -88,7 +88,8 @@ if __name__ == '__main__':
         count_lines = 0 # too long to calculate
 
     consoleGui = ConsoleGUI(sample, count_lines, filesize, progress_by_bytes=False)
-    consoleGui.process_analysis([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES], paquet_size=500000, engine_strategy=Engine.STRATEGIE_LIGNE)
+    consoleGui.process_analysis([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES],
+                                    paquet_size=2*1024*1024, engine_strategy=Engine.STRATEGIE_MULTITHREADED)
     #consoleGui.process_analysis([Constantes.STAT_FREQUENCES])
 
     #pbar = tqdm(total=count_lines)
