@@ -82,11 +82,11 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
 
         # Selection fichier
 
-        file_layout = [[sg.T("")],
+        file_layout = [[sg.T("",background_color='Green')],
                        [sg.Text("Veuillez choisir un fichier: "), sg.Input(key="-IN2-", change_submits=True),
-                        sg.FileBrowse("Ouvrir", key="-IN-TAB1")], [sg.Button("Lancer le calcul", key="-LAUNCH-")],
-                       [sg.ProgressBar(100, 'h', size=(30, 20), k='-PROGRESS-', expand_x=True)],
-                        [sg.Text("Bloc traité", size=(0,1), key="-STATUS-")]
+                        sg.FileBrowse("Ouvrir", key="-IN-TAB1")], [sg.Button("Lancer un calcul", key="-LAUNCH-")],
+                       [sg.Text("Barre de Progression", size=(0,1)),sg.ProgressBar(100, 'h', size=(30, 20), k='-PROGRESS-',expand_x=True)],
+                        [sg.Text("", size=(0,1), key="-STATUS-",background_color='Green', text_color='White', justification='center',expand_x=True)]
                        ]
 
         # Table non formatée
@@ -132,7 +132,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         tab_group = [
             [sg.TabGroup(
                 [[sg.Tab('Instructions', file_layout, title_color='White', background_color='Green',
-                         tooltip='Selectionner un fichier', element_justification='Left'),
+                         tooltip='Selectionner un fichier', element_justification='Left', font='Arial 10'),
                   sg.Tab('Statistiques Principales', table_layout, title_color='Black', background_color='Light Green',
                          tooltip='Statistiques principales du fichier', element_justification='center'),
                   sg.Tab('Répartition par Catégories', pie_layout, title_color='Black', background_color='Light Green',
@@ -221,7 +221,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
             StatistiqueLongueur.LONGUEUR_MAXIMUM]
         stat_generales_model[StatistiqueLongueur.LONGUEUR_MOYENNE] = round(
             resultat_longueur[StatistiqueLongueur.LONGUEUR_MOYENNE], 2)
-        stat_generales_model['Nombre de Mots de passe'] = count_lines
+
 
         stat_caracteres = statistiques[Statistique.STAT_CARACTERES]
         resultat_caracteres = stat_caracteres.restituer_statistiques()
@@ -240,7 +240,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         resultat_frequences = stat_frequences.restituer_statistiques()
 
         nb_total_caracteres = resultat_frequences[StatistiquesFrequences.NB_CARACTERES]
-        # frozenset((key, freeze(value)) for key, value in d.items()
+
 
         stat_frequences_model = resultat_frequences[StatistiquesFrequences.TABLEAU_FREQUENCES]
 
