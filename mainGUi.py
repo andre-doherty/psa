@@ -9,6 +9,7 @@ from core.engine import Engine, EngineObserver
 from core.stats import Statistique, StatistiqueObserver, StatistiqueLongueur, StatistiquesFrequences, StatistiqueCaracteres
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import threading
+import string
 
 matplotlib.use('TkAgg')
 class PsaGUI(EngineObserver, StatistiqueObserver) :
@@ -253,7 +254,8 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         self.window['-TABLE-'].update(values=stat_generales_model.items())
         self.draw_pie(stat_caracteres_model.keys(), stat_caracteres_model.values(), filename)
         self.draw_hist(stat_frequences_model, filename)
-        self.window['-TABLEH-'].update(values=[[k, chr(k), format((float(v)/float(nb_total_caracteres) * 100),'.2f'), v] for k, v in stat_frequences_model_h.items()])
+        filtered_items = filter(lambda item: item[1] != 0, stat_frequences_model_h.items())
+        self.window['-TABLEH-'].update(values=[[k, chr(k) , format((float(v)/float(nb_total_caracteres) * 100),'.2f'), v] for k, v in filtered_items])
 
 
 
