@@ -67,19 +67,19 @@ class PsaGUI(EngineObserver, StatistiqueObserver):
 
         parent = self.window['-HISTO-'].TKCanvas
 
-        if self.scrollable_histocanvas is None:
-            self.scrollable_histocanvas = tkinter.Canvas(parent, width=1024, height=640, scrollregion=(0, 0, 1900, 800))
-            self.scrollable_histocanvas.grid(row=0, column=0)
-            scroll_x = tkinter.Scrollbar(parent, orient="horizontal", command=self.scrollable_histocanvas.xview)
-            scroll_x.grid(row=1, column=0, sticky="ew")
+        #if self.scrollable_histocanvas is None:
+        #    self.scrollable_histocanvas = tkinter.Canvas(parent, width=1024, height=640, scrollregion=(0, 0, 1900, 800))
+        #    self.scrollable_histocanvas.grid(row=0, column=0)
+        #    scroll_x = tkinter.Scrollbar(parent, orient="horizontal", command=self.scrollable_histocanvas.xview)
+        #    scroll_x.grid(row=1, column=0, sticky="ew")
 
-            scroll_y = tkinter.Scrollbar(parent, orient="vertical", command=self.scrollable_histocanvas.yview)
-            scroll_y.grid(row=0, column=1, sticky="ns")
+        #    scroll_y = tkinter.Scrollbar(parent, orient="vertical", command=self.scrollable_histocanvas.yview)
+        #    scroll_y.grid(row=0, column=1, sticky="ns")
 
-            self.scrollable_histocanvas.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+        #    self.scrollable_histocanvas.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
 
-            self.scrollable_histocanvas.configure(scrollregion=self.scrollable_histocanvas.bbox("all"))
-            # self.scrollable_histocanvas.pack()
+        #    self.scrollable_histocanvas.configure(scrollregion=self.scrollable_histocanvas.bbox("all"))
+        #    # self.scrollable_histocanvas.pack()
 
         figureObject, axesObject = plt.subplots(nrows=1, ncols=1, figsize=(15, 8))
         char_keys = [chr(key) for key in data.keys()]
@@ -92,7 +92,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver):
         if self.histo_figure_canvasTkAgg is not None:
             self.histo_figure_canvasTkAgg.figure.canvas._tkcanvas.destroy()
 
-        self.histo_figure_canvasTkAgg = self.draw_figure(self.scrollable_histocanvas, figureObject)
+        self.histo_figure_canvasTkAgg = self.draw_figure(parent, figureObject)
 
     def create_gui(self):
         sg.theme('Green')  # Add a touch of color
