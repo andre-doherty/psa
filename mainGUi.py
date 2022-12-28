@@ -1,4 +1,4 @@
-import operator
+import tkinter
 
 # pip3 install pysimplegui
 # pip install matplotlib
@@ -7,20 +7,25 @@ import PySimpleGUI as sg
 import matplotlib
 import matplotlib.pyplot as plt
 from core.engine import Engine, EngineObserver
-from core.stats import Statistique, StatistiqueObserver, StatistiqueLongueur, StatistiquesFrequences, StatistiqueCaracteres
+from core.stats import Statistique, StatistiqueObserver, StatistiqueLongueur, StatistiquesFrequences, \
+    StatistiqueCaracteres
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import threading
 
 matplotlib.use('TkAgg')
-class PsaGUI(EngineObserver, StatistiqueObserver) :
+
+class PsaGUI(EngineObserver, StatistiqueObserver):
 
     def __init__(self):
         self.window = self.create_gui()
         self.pie_figure_canvasTkAgg = None
         self.histo_figure_canvasTkAgg = None
+        self.scrollable_histocanvas = None
+        self.engine = None
+        self.canvas_categories = None
+        self.canvas_repartition = None
 
     def notifyEngineObserver(self, notification):
-
 
         self.window.write_event_value('-NOTIFICATION-', notification)
 
@@ -42,8 +47,8 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         explode = explode * len(data)
         # graph pie using matplotlib
 
-        figureObject, axesObject = plt.subplots(nrows=1,ncols=1,figsize=(15,8))
-        axesObject.cla() # clear the axes
+        figureObject, axesObject = plt.subplots(nrows=1, ncols=1, figsize=(15, 8))
+        axesObject.cla()  # clear the axes
         axesObject.pie(data,
                        labels=entete,
                        startangle=60,
@@ -53,25 +58,41 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         axesObject.set_title(titre)
         axesObject.axis('equal')
 
-        if self.pie_figure_canvasTkAgg != None:
+        if self.pie_figure_canvasTkAgg is not None:
             self.pie_figure_canvasTkAgg.figure.canvas._tkcanvas.destroy()
 
         self.pie_figure_canvasTkAgg = self.draw_figure(self.window['-PIE-'].TKCanvas, figureObject)
 
     def draw_hist(self, data, titre):
 
-        figureObject, axesObject = plt.subplots(nrows=1,ncols=1,figsize=(15,8))
+        parent = self.window['-HISTO-'].TKCanvas
+
+        if self.scrollable_histocanvas is None:
+            self.scrollable_histocanvas = tkinter.Canvas(parent, width=1024, height=640, scrollregion=(0, 0, 1900, 800))
+            self.scrollable_histocanvas.grid(row=0, column=0)
+            scroll_x = tkinter.Scrollbar(parent, orient="horizontal", command=self.scrollable_histocanvas.xview)
+            scroll_x.grid(row=1, column=0, sticky="ew")
+
+            scroll_y = tkinter.Scrollbar(parent, orient="vertical", command=self.scrollable_histocanvas.yview)
+            scroll_y.grid(row=0, column=1, sticky="ns")
+
+            self.scrollable_histocanvas.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+
+            self.scrollable_histocanvas.configure(scrollregion=self.scrollable_histocanvas.bbox("all"))
+            # self.scrollable_histocanvas.pack()
+
+        figureObject, axesObject = plt.subplots(nrows=1, ncols=1, figsize=(15, 8))
         char_keys = [chr(key) for key in data.keys()]
-        axesObject.bar( char_keys,data.values(),width=1, color='green')
+        axesObject.bar(char_keys, data.values(), width=1, color='green')
         axesObject.set_title(titre)
-       # axesObject.set_yscale('log')
+        # axesObject.set_yscale('log')
         figureObject.legend()
         plt.tight_layout()
 
-        if self.histo_figure_canvasTkAgg != None:
+        if self.histo_figure_canvasTkAgg is not None:
             self.histo_figure_canvasTkAgg.figure.canvas._tkcanvas.destroy()
 
-        self.histo_figure_canvasTkAgg= self.draw_figure(self.window['-HISTO-'].TKCanvas, figureObject)
+        self.histo_figure_canvasTkAgg = self.draw_figure(self.scrollable_histocanvas, figureObject)
 
     def create_gui(self):
         sg.theme('Green')  # Add a touch of color
@@ -83,11 +104,13 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
 
         # Selection fichier
 
-        file_layout = [[sg.T("",background_color='Green')],
+        file_layout = [[sg.T("", background_color='Green')],
                        [sg.Text("Veuillez choisir un fichier: "), sg.Input(key="-IN2-", change_submits=True),
                         sg.FileBrowse("Ouvrir", key="-IN-TAB1")], [sg.Button("Lancer un calcul", key="-LAUNCH-")],
-                       [sg.Text("Barre de Progression", size=(0,1)),sg.ProgressBar(100, 'h', size=(30, 20), k='-PROGRESS-',expand_x=True)],
-                        [sg.Text("", size=(0,1), key="-STATUS-",background_color='Green', text_color='White', justification='center',expand_x=True)]
+                       [sg.Text("Barre de Progression", size=(0, 1)),
+                        sg.ProgressBar(100, 'h', size=(30, 20), k='-PROGRESS-', expand_x=True)],
+                       [sg.Text("", size=(0, 1), key="-STATUS-", background_color='Green', text_color='White',
+                                justification='center', expand_x=True)]
                        ]
 
         # Table non formatée
@@ -108,10 +131,9 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
              ]
         ]
 
-
         tablehist_layout = [
             [sg.Table(values=data.items(),
-                      headings=['Code Ascii','Char', 'Fréquence', 'Occurence'],
+                      headings=['Code Ascii', 'Char', 'Fréquence', 'Occurence'],
                       auto_size_columns=True,
                       justification='center',
                       alternating_row_color='green',
@@ -123,11 +145,12 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
                       text_color='white')
              ]
         ]
-        # Création d un camembert
-        self.canvas_categories = sg.Canvas( key='-PIE-', expand_y=True, background_color='Light Green')
+        # Création d'un camembert
+        self.canvas_categories = sg.Canvas(key='-PIE-', expand_y=True, background_color='Light Green')
         pie_layout = [[self.canvas_categories]]
-        # Création d un histogramme
-        self.canvas_repartition = sg.Canvas( key='-HISTO-', expand_x=True, expand_y=True, background_color='Light Green')
+
+        # Création d'un histogramme
+        self.canvas_repartition = sg.Canvas(key='-HISTO-', expand_x=True, expand_y=True, background_color='Light Green')
         histo_layout = [[self.canvas_repartition]]
 
         tab_group = [
@@ -152,7 +175,7 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         ]
 
         # Define Window
-        window = sg.Window("Password Statistiques Analyzer", tab_group, resizable=True, finalize=True,size=(1024, 600))
+        window = sg.Window("Passwords Statistic Analyzer", tab_group, resizable=True, finalize=True, size=(1024, 600))
         window.bind('<Configure>', "Event")
 
         return window
@@ -162,52 +185,54 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         refresh = 0
 
         while True:
-                event, values = self.window.read()
-                if event == sg.WIN_CLOSED :
-                    break
-                elif event == "-LAUNCH-":
-                    filename=values["-IN2-"]
+            event, values = self.window.read()
+            if event == sg.WIN_CLOSED:
+                break
+            elif event == "-LAUNCH-":
+                filename = values["-IN2-"]
 
-                    if (filename != ''):
-                        #count_lines = sum(1 for line in open(filename, encoding="iso8859-1"))
-                        count_lines = 0
+                if filename != '':
+                    # count_lines = sum(1 for line in open(filename, encoding="iso8859-1"))
+                    count_lines = 0
 
-                        self.window['-LAUNCH-'].Update(disabled=True)
-                        self.window['-HISTO-'].update()
-                        self.window['-PIE-'].update()
-                        self.window['-TABLE-'].update(values={})
-                        self.engine = Engine([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES], filename=filename)
-                        self.engine.register_observer(self)
+                    self.window['-LAUNCH-'].Update(disabled=True)
+                    self.window['-HISTO-'].update()
+                    self.window['-PIE-'].update()
+                    self.window['-TABLE-'].update(values={})
+                    self.engine = Engine(
+                        [Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES],
+                        filename=filename)
+                    self.engine.register_observer(self)
 
-                        self.window['-STATUS-'].update(value="En cours...")
+                    self.window['-STATUS-'].update(value="En cours...")
 
-                        thread = threading.Thread(target=self.long_run, args=(Engine.STRATEGIE_MULTITHREADED,), daemon=True)
-                        thread.start()
+                    thread = threading.Thread(target=self.long_run, args=(Engine.STRATEGIE_MULTIPROCESS,), daemon=True)
+                    thread.start()
 
-                elif event == '-NOTIFICATION-':
-                    notification = values['-NOTIFICATION-']
-                    lines_processed = notification[EngineObserver.LINES_PROCESSED]
-                    total_bytes_processed = notification[EngineObserver.TOTAL_BYTES_PROCESSED]
-                    total_bytes_to_process = notification[EngineObserver.TOTAL_BYTES]
+            elif event == '-NOTIFICATION-':
+                notification = values['-NOTIFICATION-']
+                lines_processed = notification[EngineObserver.LINES_PROCESSED]
+                total_bytes_processed = notification[EngineObserver.TOTAL_BYTES_PROCESSED]
+                total_bytes_to_process = notification[EngineObserver.TOTAL_BYTES]
 
-                    self.window['-PROGRESS-'].update(total_bytes_processed, total_bytes_to_process)
+                self.window['-PROGRESS-'].update(total_bytes_processed, total_bytes_to_process)
 
-                    refresh += 1
-                    if refresh == 10:
-                        self.update_visualisation(notification[EngineObserver.CURRENT_STATISTICS_STATE], filename, lines_processed)
-                        refresh = 0
+                refresh += 1
+                if refresh == 10:
+                    self.update_visualisation(notification[EngineObserver.CURRENT_STATISTICS_STATE], filename,
+                                              lines_processed)
+                    refresh = 0
 
-                elif event == "-THREAD-":
+            elif event == "-THREAD-":
 
-                    self.window['-STATUS-'].update(value="Terminé")
+                self.window['-STATUS-'].update(value="Terminé")
 
-                    lines_processed = self.engine.get_nb_lignes_traitees()
+                lines_processed = self.engine.get_nb_lignes_traitees()
 
-                    statistiques = self.engine.get_statistiques()
-                    self.update_visualisation(statistiques, filename, lines_processed)
+                statistiques = self.engine.get_statistiques()
+                self.update_visualisation(statistiques, filename, lines_processed)
 
-                    self.window['-LAUNCH-'].Update(disabled=False)
-
+                self.window['-LAUNCH-'].Update(disabled=False)
 
         self.window.close()
 
@@ -244,14 +269,14 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
 
         nb_total_caracteres = resultat_frequences[StatistiquesFrequences.NB_CARACTERES]
 
-
         stat_frequences_model = resultat_frequences[StatistiquesFrequences.TABLEAU_FREQUENCES]
 
         stat_frequences_model_h = dict(stat_frequences_model)
 
-        list_stat_frequences_model_h = sorted(stat_frequences_model_h.items(),key=lambda item: int(item[1]), reverse=True)
+        list_stat_frequences_model_h = sorted(stat_frequences_model_h.items(), key=lambda item: int(item[1]),
+                                              reverse=True)
         sorted_stat_frequences_model_h = dict()
-        for (k,v) in list_stat_frequences_model_h:
+        for (k, v) in list_stat_frequences_model_h:
             sorted_stat_frequences_model_h[k] = v
 
         self.window['-TABLE-'].update(values=stat_generales_model.items())
@@ -259,7 +284,9 @@ class PsaGUI(EngineObserver, StatistiqueObserver) :
         self.draw_hist(stat_frequences_model, filename)
 
         filtered_items = filter(lambda item: item[1] != 0, sorted_stat_frequences_model_h.items())
-        self.window['-TABLEH-'].update(values=[[k, chr(k) if str.isprintable(chr(k)) else 'NA', format((float(v)/float(nb_total_caracteres) * 100),'.2f'), v] for k, v in filtered_items])
+        self.window['-TABLEH-'].update(values=[[k, chr(k) if str.isprintable(chr(k)) else 'NA',
+                                                format((float(v) / float(nb_total_caracteres) * 100), '.2f'), v] for
+                                               k, v in filtered_items])
 
 
 if __name__ == '__main__':

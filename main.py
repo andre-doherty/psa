@@ -52,9 +52,9 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
     def long_run(engine):
         engine.analyze(Engine.STRATEGIE_LIGNE)
 
-    def process_analysis(self, demanded_statistiques, paquet_size=1*1048*1024, engine_strategy=Engine.STRATEGIE_MULTITHREADED):
+    def process_analysis(self, demanded_statistiques, paquet_size=1*1048*1024, engine_strategy=Engine.STRATEGIE_MULTIPROCESS, cores = 8):
 
-        engine = Engine(demanded_statistiques, filename=self.filename, paquet=paquet_size)
+        engine = Engine(demanded_statistiques, filename=self.filename, paquet=paquet_size, cores = cores)
         engine.register_observer(self)
 
         statistiques = engine.get_statistiques()
@@ -80,20 +80,22 @@ if __name__ == '__main__':
     sample = 'rockyou.txt'
     #sample = 'rockyou2021.txt'
 
-    #count_lines = sum(1 for line in open(sample ,encoding="iso8859-1"))
     filesize = os.path.getsize(sample)
-    if (filesize < 100*1024*1024):
+    if (filesize < 150*1024*1024):
         count_lines = sum(1 for line in open(sample, encoding="iso8859-1"))
     else:
         count_lines = 0 # too long to calculate
 
-    consoleGui = ConsoleGUI(sample, count_lines, filesize, progress_by_bytes=False)
-    consoleGui.process_analysis([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES],
-                                    paquet_size=2*1024*1024, engine_strategy=Engine.STRATEGIE_MULTITHREADED)
-    #consoleGui.process_analysis([Constantes.STAT_FREQUENCES])
+    #consoleGui = ConsoleGUI(sample, count_lines, filesize, progress_by_bytes=False)
+    #consoleGui.process_analysis([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES],
+    #                                paquet_size=200000, engine_strategy=Engine.STRATEGIE_LIGNE)
 
-    #pbar = tqdm(total=count_lines)
-    #TestLog = log("LogDemo")
-    #TestLog.debug("Debug Log")
-    #TestLog.info("Info Log")
+    #consoleGui = ConsoleGUI(sample, count_lines, filesize, progress_by_bytes=True)
+    #consoleGui.process_analysis([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES],
+    #                            paquet_size=2 * 1024 * 1024, engine_strategy=Engine.STRATEGIE_BLOCK)
+
+    consoleGui = ConsoleGUI(sample, count_lines, filesize, progress_by_bytes=True)
+    consoleGui.process_analysis([Statistique.STAT_CARACTERES],
+                                paquet_size=10 * 1024 * 1024, engine_strategy=Engine.STRATEGIE_MULTIPROCESS, cores=5)
+
 

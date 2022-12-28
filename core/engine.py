@@ -22,15 +22,17 @@ class Engine:
 
     STRATEGIE_LIGNE = "strategie_lignes"
     STRATEGIE_BLOCK = "strategie_blocs"
-    STRATEGIE_MULTITHREADED = "strategie_multithreaded"
+    STRATEGIE_MULTIPROCESS = "strategie_multiprocess"
 
-    def __init__(self, demanded_stats, filename, paquet = DEFAULT_PAQUET_SIZE):
+    def __init__(self, demanded_stats, filename, paquet = DEFAULT_PAQUET_SIZE, cores = 8):
         self.nb_lignes = 0
         self.paquet = paquet
         self.filename = filename
         self.nb_lignes_traitees = 0
         self.total_bytes_processed = 0
         self.total_bytes_to_process = 0 # initialized when analyze process starts
+        self.cores = cores # only used when using multiprocessus strategy
+        self.demanded_stats = demanded_stats # keep it for multiprocess strategy
 
         self.observers = []
 
@@ -73,7 +75,7 @@ class Engine:
 
     # multi-process strategy
     # read block of datas, parses those into lines and process those
-    def process_wrapper(filename, chunkStart, chunkSize):
+    def _process_wrapper(filename, demanded_stats, chunkStart, chunkSize):
         #print("process_wrapper", filename, chunkStart, chunkSize)
         with open(filename, encoding="iso8859-1", errors='ignore') as f:
             f.seek(chunkStart)
@@ -81,14 +83,19 @@ class Engine:
 
             statistiques = dict()
 
-            statistiques[Statistique.STAT_LONGUEUR] = StatistiqueLongueur()
-            statistiques[Statistique.STAT_CARACTERES] = StatistiqueCaracteres()
-            statistiques[Statistique.STAT_FREQUENCES] = StatistiquesFrequences()
+            for demanded_stat in demanded_stats:
+                if demanded_stat == Statistique.STAT_LONGUEUR:
+                    statistiques[Statistique.STAT_LONGUEUR] = StatistiqueLongueur()
+                if demanded_stat == Statistique.STAT_CARACTERES:
+                    statistiques[Statistique.STAT_CARACTERES] = StatistiqueCaracteres()
+                if demanded_stat == Statistique.STAT_FREQUENCES:
+                    statistiques[Statistique.STAT_FREQUENCES] = StatistiquesFrequences()
+
             Engine._process(statistiques, lines)
 
             return (statistiques, chunkStart, chunkSize, len(lines))
 
-    def chunkify(self, fname, size=1024 * 1024):
+    def _chunkify(self, fname, size=1024 * 1024):
         fileEnd = self.total_bytes_to_process
         with open(fname, 'rb') as f:
             chunkEnd = f.tell()
@@ -103,9 +110,9 @@ class Engine:
                 else:
                     yield chunkStart, chunkEnd - chunkStart
 
-    def process_multithreaded(self):
+    def _process_multiprocess(self):
 
-        cores = 8
+        cores = self.cores
         # init objects
         pool = mp.Pool(cores)
         jobs = []
@@ -113,10 +120,10 @@ class Engine:
         #all_chunk = 0
 
         # create jobs
-        for chunkStart, chunkSize in self.chunkify(self.filename, size=self.paquet):
+        for chunkStart, chunkSize in self._chunkify(self.filename, size=self.paquet):
             #print (chunkStart, chunkSize)
             #all_chunk += chunkSize
-            jobs.append(pool.apply_async(Engine.process_wrapper, (self.filename, chunkStart, chunkSize)))
+            jobs.append(pool.apply_async(Engine._process_wrapper, (self.filename, self.demanded_stats, chunkStart, chunkSize)))
 
         #print("total", all_chunk)
         # wait for all jobs to finish
@@ -130,12 +137,12 @@ class Engine:
                 self.statistics[statistique_name].merge(job_statistique)
                 #resultat = job_statistique.restituer_statistiques()
             if len(self.observers) != 0:
-                notification = self.build_notification(job_chunkSize, job_lines_processed)
+                notification = self._build_notification(job_chunkSize, job_lines_processed)
                 self.notify_observers(notification)
         # clean up
         pool.close()
 
-    def build_notification(self, bytes_processed, lines_processed):
+    def _build_notification(self, bytes_processed, lines_processed):
         notification = dict()
         notification[EngineObserver.LINES_PROCESSED] = lines_processed
         notification[EngineObserver.BYTES_PROCESSED] = bytes_processed
@@ -150,7 +157,7 @@ class Engine:
 
     # multi lines strategy :
     # read line by line and process packets of lines
-    def process_multilines(self):
+    def _process_multilines(self):
 
         with fileinput.input(files=(self.filename), openhook=fileinput.hook_encoded("iso8859-1")) as f:
 
@@ -167,7 +174,7 @@ class Engine:
                     Engine._process(self.statistics, entries)
 
                     if len(self.observers) != 0:
-                        notification = self.build_notification(0, len(entries))
+                        notification = self._build_notification(0, len(entries))
                         self.notify_observers(notification)
 
                     count_paquet = 0
@@ -178,11 +185,11 @@ class Engine:
                 Engine._process(self.statistics, entries)
 
                 if len(self.observers) != 0:
-                    notification = self.build_notification(0, len(entries))
+                    notification = self._build_notification(0, len(entries))
                     self.notify_observers(notification)
 
     # read blocks, parse those into lines and process those lines list
-    def read_and_process_chunk(self, chunk_start, chunk_size):
+    def _read_and_process_chunk(self, chunk_start, chunk_size):
         with open(self.filename, encoding="iso8859-1", errors='ignore') as f:
             f.seek(chunk_start)
             chunk = f.read(chunk_size).splitlines()
@@ -213,7 +220,7 @@ class Engine:
                 self.total_bytes_processed += bytes_processed
 
                 if len(self.observers) != 0:
-                    notification = self.build_notification(bytes_processed, len(chunk))
+                    notification = self._build_notification(bytes_processed, len(chunk))
                     self.notify_observers(notification)
 
                 return offset
@@ -221,26 +228,26 @@ class Engine:
                 return -1
 
 
-    def process_multiblocks(self):
+    def _process_multiblocks(self):
         offset = 0
         while True:
-            offset = self.read_and_process_chunk(offset, self.paquet)
+            offset = self._read_and_process_chunk(offset, self.paquet)
             if (offset == -1):
                 break
 
 
-    def analyze(self, strategie = STRATEGIE_MULTITHREADED):
+    def analyze(self, strategie = STRATEGIE_MULTIPROCESS):
 
         self.total_bytes_to_process = os.path.getsize(self.filename)
 
         if (strategie == self.STRATEGIE_BLOCK):
-            self.process_multiblocks()
+            self._process_multiblocks()
             return
 
-        if (strategie == self.STRATEGIE_MULTITHREADED):
-            self.process_multithreaded()
+        if (strategie == self.STRATEGIE_MULTIPROCESS):
+            self._process_multiprocess()
             return
 
         if (strategie == self.STRATEGIE_LIGNE):
-            self.process_multilines()
+            self._process_multilines()
             return
