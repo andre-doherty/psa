@@ -63,7 +63,7 @@ class Engine:
     def unregister_observer(self, engineObserver: EngineObserver):
         self.observers.remove(engineObserver)
 
-    def notify_observers(self, notification):
+    def _notify_observers(self, notification):
         for observer in self.observers:
             observer.notifyEngineObserver(notification)
 
@@ -138,7 +138,7 @@ class Engine:
                 #resultat = job_statistique.restituer_statistiques()
             if len(self.observers) != 0:
                 notification = self._build_notification(job_chunkSize, job_lines_processed)
-                self.notify_observers(notification)
+                self._notify_observers(notification)
         # clean up
         pool.close()
 
@@ -175,7 +175,7 @@ class Engine:
 
                     if len(self.observers) != 0:
                         notification = self._build_notification(0, len(entries))
-                        self.notify_observers(notification)
+                        self._notify_observers(notification)
 
                     count_paquet = 0
                     entries = []
@@ -186,7 +186,7 @@ class Engine:
 
                 if len(self.observers) != 0:
                     notification = self._build_notification(0, len(entries))
-                    self.notify_observers(notification)
+                    self._notify_observers(notification)
 
     # read blocks, parse those into lines and process those lines list
     def _read_and_process_chunk(self, chunk_start, chunk_size):
@@ -221,7 +221,7 @@ class Engine:
 
                 if len(self.observers) != 0:
                     notification = self._build_notification(bytes_processed, len(chunk))
-                    self.notify_observers(notification)
+                    self._notify_observers(notification)
 
                 return offset
             else:

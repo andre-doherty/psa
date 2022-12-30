@@ -24,7 +24,7 @@ class Statistique:
     def unregister_listener(self, observer):
         self.observers.remove(observer)
 
-    def notify_observer(self, notification):
+    def _notify_observer(self, notification):
         for observer in self.observers:
             observer.notifyStatistiqueObserver(notification)
 
@@ -40,8 +40,11 @@ class Statistique:
     def restituer_statistiques(self):
         pass
 
+    @abstractmethod
+    def merge(self, stat):
+        pass
 
-    def create_notification_payload(self):
+    def _create_notification_payload(self):
         notification = dict()
         notification[StatistiqueObserver.TIMESTAMP] = time.time()
         notification[StatistiqueObserver.CURRENT_STATISTICS] = self.restituer_statistiques()
@@ -77,7 +80,7 @@ class StatistiquesFrequences(Statistique):
                 else:
                     self.not_ascii[char] = 1
         if len(self.observers) != 0:
-            self.notify_observer(self.create_notification_payload())
+            self._notify_observer(self._create_notification_payload())
 
     def restituer_statistiques(self):
 
@@ -147,7 +150,7 @@ class StatistiqueCaracteres(Statistique):
                         self.nb_symboles += 1
 
         if len(self.observers) != 0:
-            self.notify_observer(self.create_notification_payload())
+            self._notify_observer(self._create_notification_payload())
 
     def restituer_statistiques(self):
 
@@ -204,7 +207,7 @@ class StatistiqueLongueur(Statistique):
             self.nb_lignes_analysees += 1
 
         if len(self.observers) != 0:
-            self.notify_observer(self.create_notification_payload())
+            self._notify_observer(self._create_notification_payload())
 
     def restituer_statistiques(self):
 

@@ -1,4 +1,5 @@
 import os
+import argparse
 
 from core.engine import Engine, EngineObserver
 #from log4python.Log4python import log
@@ -76,9 +77,23 @@ class ConsoleGUI(EngineObserver, StatistiqueObserver) :
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    #sample = 'smallrock.txt'
-    sample = 'rockyou.txt'
-    #sample = 'rockyou2021.txt'
+
+    parser = argparse.ArgumentParser(description='Compute statistics on passwords text database.')
+    parser.add_argument('--sample', help='file name')
+    parser.add_argument('--cores', type=int, default=8, help='number of cores to use (multiprocessing only)')
+    parser.add_argument('--strategy', choices=['lines', 'block', 'multiprocess'], default='multiprocess')
+    parser.add_argument('--paquet', type=int, default=10*1024*1024, help='read block or lines at once')
+    parser.add_argument('--stats', nargs="+", help='specify stats to compute : length, frequency, characters. Default all')
+
+    args = parser.parse_args()
+
+    sample = args.sample
+    cores = args.cores
+    strategy = args.strategy
+    paquet = args.paquet
+    stats = args.stats
+
+    #print (sample, cores, strategy, paquet, stats)
 
     filesize = os.path.getsize(sample)
     if (filesize < 150*1024*1024):
@@ -86,16 +101,28 @@ if __name__ == '__main__':
     else:
         count_lines = 0 # too long to calculate
 
-    #consoleGui = ConsoleGUI(sample, count_lines, filesize, progress_by_bytes=False)
-    #consoleGui.process_analysis([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES],
-    #                                paquet_size=200000, engine_strategy=Engine.STRATEGIE_LIGNE)
+    if strategy == 'multiprocess':
+        progress_mode_by_block = True
+        engine_strategy = Engine.STRATEGIE_MULTIPROCESS
+    elif strategy == 'block':
+        progress_mode_by_block = True
+        engine_strategy = Engine.STRATEGIE_BLOCK
+    elif strategy == 'lines':
+        progress_mode_by_block = False
+        engine_strategy = Engine.STRATEGIE_LIGNE
 
-    #consoleGui = ConsoleGUI(sample, count_lines, filesize, progress_by_bytes=True)
-    #consoleGui.process_analysis([Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES],
-    #                            paquet_size=2 * 1024 * 1024, engine_strategy=Engine.STRATEGIE_BLOCK)
+    if stats is None:
+        stats_to_compute = [Statistique.STAT_LONGUEUR, Statistique.STAT_FREQUENCES, Statistique.STAT_CARACTERES]
+    else:
+        stats_to_compute = []
+        if 'length' in stats:
+            stats_to_compute.append(Statistique.STAT_LONGUEUR)
+        if 'frequency' in stats:
+            stats_to_compute.append(Statistique.STAT_FREQUENCES)
+        if 'characters' in stats:
+            stats_to_compute.append(Statistique.STAT_CARACTERES)
+    #print (stats_to_compute)
 
-    consoleGui = ConsoleGUI(sample, count_lines, filesize, progress_by_bytes=True)
-    consoleGui.process_analysis([Statistique.STAT_CARACTERES],
-                                paquet_size=10 * 1024 * 1024, engine_strategy=Engine.STRATEGIE_MULTIPROCESS, cores=5)
-
+    consoleGui = ConsoleGUI(sample, count_lines, filesize, progress_by_bytes=progress_mode_by_block)
+    consoleGui.process_analysis(stats_to_compute, paquet_size=paquet, engine_strategy=engine_strategy, cores=cores)
 
