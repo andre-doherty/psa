@@ -95,6 +95,12 @@ if __name__ == '__main__':
 
     #print (sample, cores, strategy, paquet, stats)
 
+    sample_exists = os.path.exists(sample)
+
+    if not sample_exists:
+        print("File doesn't exist:", sample)
+        exit(1)
+
     filesize = os.path.getsize(sample)
     if (filesize < 150*1024*1024):
         count_lines = sum(1 for line in open(sample, encoding="iso8859-1"))
