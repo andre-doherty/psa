@@ -59,10 +59,7 @@ class StatistiquesFrequences(Statistique):
 
     def __init__(self):
         self.nb_caracteres = 0
-        #self.tab_frequence = dict()
-        #for i in range(256):
-        #    self.tab_frequence[i] = 0
-        self.not_ascii = dict()
+        self.tab_frequency = dict()
 
         Statistique.__init__(self)
 
@@ -73,22 +70,21 @@ class StatistiquesFrequences(Statistique):
         for chaine in chaines:
             for char in chaine:
                 self.nb_caracteres += 1
-                if (char in self.not_ascii):
-                    value = self.not_ascii[char]
+                if (char in self.tab_frequency):
+                    value = self.tab_frequency[char]
                     value += 1
-                    self.not_ascii[char] = value
+                    self.tab_frequency[char] = value
                 else:
-                    self.not_ascii[char] = 1
+                    self.tab_frequency[char] = 1
         if len(self.observers) != 0:
             self._notify_observer(self._create_notification_payload())
 
     def restituer_statistiques(self):
 
         tableau_frequences = dict()
-        for key in sorted(self.not_ascii):
+        for key in sorted(self.tab_frequency):
             if self.nb_caracteres != 0:
-                #tableau_frequences[key] = format((float(self.not_ascii[key])/float(self.nb_caracteres) * 100),'.2f')
-                tableau_frequences[ord(key)] = self.not_ascii[key]
+                tableau_frequences[ord(key)] = self.tab_frequency[key]
             else:
                 tableau_frequences[ord(key)] = "N/A"
 
@@ -101,12 +97,12 @@ class StatistiquesFrequences(Statistique):
         statistique = StatistiquesFrequences()
         statistique = stat
         self.nb_caracteres += statistique.nb_caracteres
-        statistique_tab_caracteres = statistique.not_ascii
+        statistique_tab_caracteres = statistique.tab_frequency
         for key in statistique_tab_caracteres:
-            if key in self.not_ascii:
-                self.not_ascii[key] = self.not_ascii[key] + statistique_tab_caracteres[key]
+            if key in self.tab_frequency:
+                self.tab_frequency[key] = self.tab_frequency[key] + statistique_tab_caracteres[key]
             else:
-                self.not_ascii[key] = statistique_tab_caracteres[key]
+                self.tab_frequency[key] = statistique_tab_caracteres[key]
 
 
 class StatistiqueCaracteres(Statistique):
